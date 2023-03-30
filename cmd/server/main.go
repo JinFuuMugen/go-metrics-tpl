@@ -32,7 +32,7 @@ func updateGauge(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if r.Header.Get("Content-Type") != "text/plain" {
-		http.Error(w, "Content-Type must be text/plain", http.StatusPartialContent)
+		http.Error(w, "Content-Type must be text/plain", http.StatusUnsupportedMediaType)
 		return
 	}
 
@@ -57,7 +57,7 @@ func updateCounter(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if r.Header.Get("Content-Type") != "text/plain" {
-		http.Error(w, "Content-Type must be text/plain", http.StatusPartialContent)
+		http.Error(w, "Content-Type must be text/plain", http.StatusUnsupportedMediaType)
 		return
 	}
 
