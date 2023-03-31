@@ -44,7 +44,7 @@ func (ms *MemStorage) GetCounter(key string) (int64, error) {
 
 var MS MemStorage
 
-func updateGauge(w http.ResponseWriter, r *http.Request) {
+func PostGaugeHandle(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Not a valid HTTP method.", http.StatusMethodNotAllowed)
 		return
@@ -73,7 +73,7 @@ func updateGauge(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(response))
 }
 
-func updateCounter(w http.ResponseWriter, r *http.Request) {
+func PostCounterHandle(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Not a valid HTTP method.", http.StatusMethodNotAllowed)
 		return
@@ -102,12 +102,18 @@ func updateCounter(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(response))
 }
 
+func MainHandle(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("<!DOCTYPE HTML>\n<html>\n <head>\n <title>Empty Page</title>\n<p> This page is empty for now</p> <meta charset=\"utf-8\">\n </head>\n <body>\n\n</body>\n</html>"))
+	return
+}
+
 func main() {
 	MS.Init()
 	mux := http.NewServeMux()
 
-	mux.HandleFunc(`/update/counter/`, updateCounter)
-	mux.HandleFunc(`/update/gauge/`, updateGauge)
+	mux.HandleFunc(`/`, MainHandle)
+	mux.HandleFunc(`/update/counter/`, PostCounterHandle)
+	mux.HandleFunc(`/update/gauge/`, PostGaugeHandle)
 
 	err := http.ListenAndServe(`:8080`, mux)
 	if err != nil {
