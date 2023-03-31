@@ -68,7 +68,7 @@ func updateGauge(w http.ResponseWriter, r *http.Request) {
 	}
 	MS.AddGauge(key, value)
 	w.Header().Set("content-type", "text/plain; charset=utf-8")
-	gaugeValue, err := MS.GetGauge(key)
+	gaugeValue, _ := MS.GetGauge(key)
 	response := fmt.Sprintf("Gauge value updated. Metric named %s is now %5f.", key, gaugeValue)
 	w.Write([]byte(response))
 }
@@ -97,7 +97,7 @@ func updateCounter(w http.ResponseWriter, r *http.Request) {
 	}
 	MS.AddCounter(key, value)
 	w.Header().Set("content-type", "text/plain; charset=utf-8")
-	counterValue, err := MS.GetCounter(key)
+	counterValue, _ := MS.GetCounter(key)
 	response := fmt.Sprintf("Counter value updated. Metric named %s is now %d.", key, counterValue)
 	w.Write([]byte(response))
 }
