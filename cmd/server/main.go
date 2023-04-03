@@ -49,10 +49,6 @@ func PostGaugeHandle(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Not a valid HTTP method.", http.StatusMethodNotAllowed)
 		return
 	}
-	if r.Header.Get("Content-Type") != "text/plain" {
-		http.Error(w, "Not a valid content-type.", http.StatusUnsupportedMediaType)
-		return
-	}
 
 	urlSplit := strings.Split(r.URL.String(), "/")
 	if len(urlSplit) != 5 {
@@ -78,10 +74,6 @@ func PostCounterHandle(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Not a valid HTTP method.", http.StatusMethodNotAllowed)
 		return
 	}
-	if r.Header.Get("Content-Type") != "text/plain" {
-		http.Error(w, "Not a valid content-type.", http.StatusUnsupportedMediaType)
-		return
-	}
 
 	urlSplit := strings.Split(r.URL.String(), "/")
 	if len(urlSplit) != 5 {
@@ -102,16 +94,10 @@ func PostCounterHandle(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(response))
 }
 
-func MainHandle(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("<!DOCTYPE HTML>\n<html>\n <head>\n <title>Empty Page</title>\n<p> This page is empty for now</p> <meta charset=\"utf-8\">\n </head>\n <body>\n\n</body>\n</html>"))
-	return
-}
-
 func main() {
 	MS.Init()
 	mux := http.NewServeMux()
 
-	mux.HandleFunc(`/`, MainHandle)
 	mux.HandleFunc(`/update/counter/`, PostCounterHandle)
 	mux.HandleFunc(`/update/gauge/`, PostGaugeHandle)
 
