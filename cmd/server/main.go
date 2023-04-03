@@ -44,62 +44,53 @@ func (ms *MemStorage) GetCounter(key string) (int64, error) {
 
 var MS MemStorage
 
-func PostGaugeHandle(w http.ResponseWriter, r *http.Request) {
+func UpdateMetricsHandle(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Not a valid HTTP method.", http.StatusMethodNotAllowed)
 		return
 	}
-
 	urlSplit := strings.Split(r.URL.String(), "/")
 	if len(urlSplit) != 5 {
-		http.Error(w, "Not a valid URL.", http.StatusBadRequest)
+		http.Error(w, "Not a valid URL.", http.StatusNotFound)
 		return
 	}
-
 	key := urlSplit[len(urlSplit)-2]
-	value, err := strconv.ParseFloat(urlSplit[len(urlSplit)-1], 64)
-	if err != nil {
-		http.Error(w, "Not a valid metric value.", http.StatusBadRequest)
+	switch urlSplit[2] {
+	case "counter":
+		value, err := strconv.ParseInt(urlSplit[len(urlSplit)-1], 10, 64)
+		if err != nil {
+			http.Error(w, "Not a valid metric value.", http.StatusBadRequest)
+			return
+		}
+		MS.AddCounter(key, value)
+		w.Header().Set("content-type", "text/plain; charset=utf-8")
+		counterValue, _ := MS.GetCounter(key)
+		response := fmt.Sprintf("Counter value updated. Metric named %s is now %d.", key, counterValue)
+		w.Write([]byte(response))
+		return
+	case "gauge":
+		value, err := strconv.ParseFloat(urlSplit[len(urlSplit)-1], 64)
+		if err != nil {
+			http.Error(w, "Not a valid metric value.", http.StatusBadRequest)
+			return
+		}
+		MS.AddGauge(key, value)
+		w.Header().Set("content-type", "text/plain; charset=utf-8")
+		gaugeValue, _ := MS.GetGauge(key)
+		response := fmt.Sprintf("Gauge value updated. Metric named %s is now %f.", key, gaugeValue)
+		w.Write([]byte(response))
+		return
+	default:
+		http.Error(w, "Not a valid metric.", http.StatusNotImplemented)
 		return
 	}
-	MS.AddGauge(key, value)
-	w.Header().Set("content-type", "text/plain; charset=utf-8")
-	gaugeValue, _ := MS.GetGauge(key)
-	response := fmt.Sprintf("Gauge value updated. Metric named %s is now %5f.", key, gaugeValue)
-	w.Write([]byte(response))
-}
-
-func PostCounterHandle(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Not a valid HTTP method.", http.StatusMethodNotAllowed)
-		return
-	}
-
-	urlSplit := strings.Split(r.URL.String(), "/")
-	if len(urlSplit) != 5 {
-		http.Error(w, "Not a valid URL.", http.StatusBadRequest)
-		return
-	}
-
-	key := urlSplit[len(urlSplit)-2]
-	value, err := strconv.ParseInt(urlSplit[len(urlSplit)-1], 10, 64)
-	if err != nil {
-		http.Error(w, "Not a valid metric value.", http.StatusBadRequest)
-		return
-	}
-	MS.AddCounter(key, value)
-	w.Header().Set("content-type", "text/plain; charset=utf-8")
-	counterValue, _ := MS.GetCounter(key)
-	response := fmt.Sprintf("Counter value updated. Metric named %s is now %d.", key, counterValue)
-	w.Write([]byte(response))
 }
 
 func main() {
 	MS.Init()
 	mux := http.NewServeMux()
 
-	mux.HandleFunc(`/update/counter/`, PostCounterHandle)
-	mux.HandleFunc(`/update/gauge/`, PostGaugeHandle)
+	mux.HandleFunc(`/update/`, UpdateMetricsHandle)
 
 	err := http.ListenAndServe(`:8080`, mux)
 	if err != nil {
