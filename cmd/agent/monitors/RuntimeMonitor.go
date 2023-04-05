@@ -1,12 +1,13 @@
-package main
+package monitors
 
 import (
+	"math/rand"
 	"runtime"
 )
 
 func NewMonitor(GaugeMap *map[string]float64) {
 	var rtm runtime.MemStats
-	RandomValue := 0.0
+	RandomValue := 1000 * rand.Float64()
 
 	// Read full mem stats
 	runtime.ReadMemStats(&rtm)
