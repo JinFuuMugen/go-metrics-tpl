@@ -6,7 +6,6 @@ import (
 )
 
 func main() {
-	handlers.MS.Init()
 	mux := http.NewServeMux()
 
 	mux.HandleFunc(`/update/`, handlers.UpdateMetricsHandle)
