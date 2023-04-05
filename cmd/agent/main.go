@@ -41,22 +41,12 @@ func main() {
 		if ticks == int(reportInterval/pollInterval) {
 			ticks = 0
 			for k, v := range GaugeMap {
-				_, err := sendPost("gauge", k, v)
-				if err != nil {
-					//fmt.Println("Connection error")
-					continue
-				}
-				//bodyString, _ := io.ReadAll(resp.Body)
-				//fmt.Println(string(bodyString))
+				resp, _ := sendPost("gauge", k, v)
+				resp.Body.Close()
 			}
 			for k, v := range CounterMap {
-				_, err := sendPost("counter", k, v)
-				if err != nil {
-					//fmt.Println("Connection error")
-					continue
-				}
-				//bodyString, _ := io.ReadAll(resp.Body)
-				//fmt.Println(string(bodyString))
+				resp, _ := sendPost("counter", k, v)
+				resp.Body.Close()
 			}
 		}
 	}
