@@ -14,7 +14,6 @@ func GetMetricHandle(w http.ResponseWriter, r *http.Request) {
 	metricType := chi.URLParam(r, "metric_type")
 	metricName := chi.URLParam(r, "metric_name")
 
-	var answer string
 	switch metricType {
 	case "gauge":
 		v, err := MS.GetGauge(metricName)
@@ -22,8 +21,7 @@ func GetMetricHandle(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Metric is not found.", http.StatusNotFound)
 			return
 		}
-		answer = fmt.Sprintf("Metric of type gauge named %s is %f", metricName, v)
-		w.Write([]byte(answer))
+		w.Write([]byte(fmt.Sprintf("%f", v)))
 		w.Header().Add("Content-Type", "text/plain")
 		return
 	case "counter":
@@ -32,8 +30,7 @@ func GetMetricHandle(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Metric is not found.", http.StatusNotFound)
 			return
 		}
-		answer = fmt.Sprintf("Metric of type counter named %s is %d", metricName, v)
-		w.Write([]byte(answer))
+		w.Write([]byte(fmt.Sprintf("%d", v)))
 		w.Header().Add("Content-Type", "text/plain")
 		return
 	default:
