@@ -21,7 +21,7 @@ func GetMetricHandle(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Metric is not found.", http.StatusNotFound)
 			return
 		}
-		w.Write([]byte(fmt.Sprintf("%f", v)))
+		w.Write([]byte(fmt.Sprintf("%.3f", v)))
 		w.Header().Add("Content-Type", "text/plain")
 		return
 	case "counter":
