@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
@@ -19,47 +20,51 @@ func TestUpdateMetricsHandle(t *testing.T) {
 			name:       "positive gauge post",
 			wantedCode: 200,
 			method:     http.MethodPost,
-			url:        "localhost:8080/update/gauge/someValue/120.414",
+			url:        "/update/gauge/someValue/120.414",
 		},
 		{
 			name:       "positive counter post",
 			wantedCode: 200,
 			method:     http.MethodPost,
-			url:        "localhost:8080/update/counter/someValue/120",
+			url:        "/update/counter/someValue/120",
 		},
 		{
 			name:       "wrong method",
 			wantedCode: 405,
 			method:     http.MethodGet,
-			url:        "localhost:8080/update/counter/someValue/120",
+			url:        "/update/counter/someValue/120",
 		},
 		{
 			name:       "wrong url",
 			wantedCode: 404,
 			method:     http.MethodPost,
-			url:        "localhost:8080/update",
+			url:        "/update",
 		},
 		{
 			name:       "wrong metric",
 			wantedCode: 501,
 			method:     http.MethodPost,
-			url:        "localhost:8080/update/metr/someValue/900.009",
+			url:        "/update/metr/someValue/900.009",
 		},
 		{
 			name:       "bad metric value",
 			wantedCode: 400,
 			method:     http.MethodPost,
-			url:        "localhost:8080/update/counter/someValue/120.321",
+			url:        "/update/counter/someValue/120.321",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			request := httptest.NewRequest(tt.method, tt.url, nil)
-			w := httptest.NewRecorder()
-			UpdateMetricsHandle(w, request)
-			res := w.Result()
-			assert.Equal(t, tt.wantedCode, res.StatusCode)
-			res.Body.Close()
+			r := chi.NewRouter()
+			r.HandleFunc(`/update/{metric_type}/{metric_name}/{metric_value}`, UpdateMetricsHandle)
+
+			req, err := http.NewRequest(tt.method, tt.url, nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+			rr := httptest.NewRecorder()
+			r.ServeHTTP(rr, req)
+			assert.Equal(t, tt.wantedCode, rr.Code)
 		})
 	}
 }

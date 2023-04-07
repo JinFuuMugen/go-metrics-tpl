@@ -11,7 +11,6 @@ func GetMetricHandle(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Not a valid method", http.StatusMethodNotAllowed)
 		return
 	}
-
 	metricType := chi.URLParam(r, "metric_type")
 	metricName := chi.URLParam(r, "metric_name")
 
