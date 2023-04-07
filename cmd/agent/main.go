@@ -3,9 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/JinFuuMugen/go-metrics-tpl.git/cmd/agent/monitors"
-	"io"
-	"net/http"
-	"os"
+	"github.com/go-resty/resty/v2"
 	"strconv"
 	"time"
 )
@@ -14,24 +12,16 @@ type metricType interface {
 	float64 | int64
 }
 
-func sendPost[T metricType](metricKind string, metricName string, metricValue T, client *http.Client) (*http.Response, error) {
-	if client == nil {
-		client = &http.Client{}
-	}
+func sendPost[T metricType](metricKind string, metricName string, metricValue T, client *resty.Client) (*resty.Response, error) {
+
 	var url string
 	if metricKind == "gauge" {
 		url = "http://localhost:8080/update/" + metricKind + "/" + metricName + "/" + strconv.FormatFloat(float64(metricValue), 'E', -1, 64)
 	} else {
 		url = "http://localhost:8080/update/" + metricKind + "/" + metricName + "/" + strconv.FormatInt(int64(metricValue), 10)
 	}
-	req, _ := http.NewRequest(http.MethodPost, url, nil)
-	req.Header.Add("Content-Type", "text/plain")
-	resp, err := client.Do(req)
-	if err == nil {
-		io.Copy(os.Stdout, resp.Body)
-	} else {
-		fmt.Println("Connection error")
-	}
+
+	resp, err := client.R().SetHeader("Content-Type", "text/plain").Post(url)
 	return resp, err
 }
 
@@ -45,9 +35,8 @@ func main() {
 	CounterMap["PollCounter"] = 1
 	ticks := 0
 
-	client := &http.Client{
-		Timeout: time.Second * 1,
-	}
+	client := resty.New()
+
 	for {
 		<-time.After(pollInterval)
 		monitors.NewMonitor(&GaugeMap)
@@ -57,15 +46,13 @@ func main() {
 			for k, v := range GaugeMap {
 				resp, _ := sendPost("gauge", k, v, client)
 				if resp != nil {
-					io.Copy(io.Discard, resp.Body)
-					resp.Body.Close()
+					fmt.Println(resp.StatusCode())
 				}
 			}
 			for k, v := range CounterMap {
 				resp, _ := sendPost("counter", k, v, client)
 				if resp != nil {
-					io.Copy(io.Discard, resp.Body)
-					resp.Body.Close()
+					fmt.Println(resp.StatusCode())
 				}
 			}
 		}

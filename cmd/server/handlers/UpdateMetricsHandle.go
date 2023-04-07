@@ -3,9 +3,9 @@ package handlers
 import (
 	"fmt"
 	"github.com/JinFuuMugen/go-metrics-tpl.git/cmd/server/storage"
+	"github.com/go-chi/chi/v5"
 	"net/http"
 	"strconv"
-	"strings"
 )
 
 var MS storage.MemStorage //creating MemStorage var
@@ -15,35 +15,33 @@ func UpdateMetricsHandle(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Not a valid HTTP method.", http.StatusMethodNotAllowed)
 		return
 	}
-	urlSplit := strings.Split(r.URL.String(), "/")
-	if len(urlSplit) != 5 {
-		http.Error(w, "Not a valid URL.", http.StatusNotFound)
-		return
-	}
-	key := urlSplit[len(urlSplit)-2]
-	switch urlSplit[2] {
+	metricType := chi.URLParam(r, "metric_type")
+	metricName := chi.URLParam(r, "metric_name")
+	metricValue := chi.URLParam(r, "metric_value")
+
+	switch metricType {
 	case "counter":
-		value, err := strconv.ParseInt(urlSplit[len(urlSplit)-1], 10, 64)
+		value, err := strconv.ParseInt(metricValue, 10, 64)
 		if err != nil {
 			http.Error(w, "Not a valid metric value.", http.StatusBadRequest)
 			return
 		}
-		MS.AddCounter(key, value)
+		MS.AddCounter(metricName, value)
 		w.Header().Set("content-type", "text/plain; charset=utf-8")
-		counterValue, _ := MS.GetCounter(key)
-		response := fmt.Sprintf("Counter value updated. Metric named %s is now %d.", key, counterValue)
+		counterValue, _ := MS.GetCounter(metricName)
+		response := fmt.Sprintf("Counter value updated. Metric named %s is now %d.", metricName, counterValue)
 		w.Write([]byte(response))
 		return
 	case "gauge":
-		value, err := strconv.ParseFloat(urlSplit[len(urlSplit)-1], 64)
+		value, err := strconv.ParseFloat(metricValue, 64)
 		if err != nil {
 			http.Error(w, "Not a valid metric value.", http.StatusBadRequest)
 			return
 		}
-		MS.AddGauge(key, value)
+		MS.AddGauge(metricName, value)
 		w.Header().Set("content-type", "text/plain; charset=utf-8")
-		gaugeValue, _ := MS.GetGauge(key)
-		response := fmt.Sprintf("Gauge value updated. Metric named %s is now %f.", key, gaugeValue)
+		gaugeValue, _ := MS.GetGauge(metricName)
+		response := fmt.Sprintf("Gauge value updated. Metric named %s is now %f.", metricName, gaugeValue)
 		w.Write([]byte(response))
 		return
 	default:
