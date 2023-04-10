@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"fmt"
+	"github.com/JinFuuMugen/go-metrics-tpl.git/cmd/server/storage"
 	"github.com/go-chi/chi/v5"
 	"net/http"
 )
@@ -16,7 +17,7 @@ func GetMetricHandle(w http.ResponseWriter, r *http.Request) {
 
 	switch metricType {
 	case "gauge":
-		v, err := MS.GetGauge(metricName)
+		v, err := storage.MS.GetGauge(metricName)
 		if err != nil {
 			http.Error(w, "Metric is not found.", http.StatusNotFound)
 			return
@@ -25,7 +26,7 @@ func GetMetricHandle(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "text/plain")
 		return
 	case "counter":
-		v, err := MS.GetCounter(metricName)
+		v, err := storage.MS.GetCounter(metricName)
 		if err != nil {
 			http.Error(w, "Metric is not found.", http.StatusNotFound)
 			return

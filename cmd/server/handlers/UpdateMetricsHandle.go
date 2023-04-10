@@ -8,8 +8,6 @@ import (
 	"strconv"
 )
 
-var MS storage.MemStorage //creating MemStorage var
-
 func UpdateMetricsHandle(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Not a valid HTTP method.", http.StatusMethodNotAllowed)
@@ -26,9 +24,9 @@ func UpdateMetricsHandle(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Not a valid metric value.", http.StatusBadRequest)
 			return
 		}
-		MS.AddCounter(metricName, value)
+		storage.MS.AddCounter(metricName, value)
 		w.Header().Set("content-type", "text/plain; charset=utf-8")
-		counterValue, _ := MS.GetCounter(metricName)
+		counterValue, _ := storage.MS.GetCounter(metricName)
 		response := fmt.Sprintf("Counter value updated. Metric named %s is now %d.", metricName, counterValue)
 		w.Write([]byte(response))
 		return
@@ -38,9 +36,9 @@ func UpdateMetricsHandle(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Not a valid metric value.", http.StatusBadRequest)
 			return
 		}
-		MS.AddGauge(metricName, value)
+		storage.MS.AddGauge(metricName, value)
 		w.Header().Set("content-type", "text/plain; charset=utf-8")
-		gaugeValue, _ := MS.GetGauge(metricName)
+		gaugeValue, _ := storage.MS.GetGauge(metricName)
 		response := fmt.Sprintf("Gauge value updated. Metric named %s is now %f.", metricName, gaugeValue)
 		w.Write([]byte(response))
 		return
