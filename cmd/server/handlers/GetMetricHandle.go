@@ -5,7 +5,13 @@ import (
 	"github.com/JinFuuMugen/go-metrics-tpl.git/cmd/server/storage"
 	"github.com/go-chi/chi/v5"
 	"net/http"
+	"strings"
 )
+
+func cutZeroes(num float64) string {
+	s := fmt.Sprintf("%.3f", num)
+	return strings.TrimRight(strings.TrimRight(s, "0"), ".")
+}
 
 func GetMetricHandle(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
@@ -22,7 +28,7 @@ func GetMetricHandle(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Metric is not found.", http.StatusNotFound)
 			return
 		}
-		w.Write([]byte(fmt.Sprintf("%.2f", v)))
+		w.Write([]byte(fmt.Sprintf("%s", cutZeroes(v))))
 		w.Header().Add("Content-Type", "text/plain")
 		return
 	case "counter":
