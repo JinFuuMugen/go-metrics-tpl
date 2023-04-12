@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/JinFuuMugen/go-metrics-tpl.git/cmd/agent/monitors"
+	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/monitors"
 	"github.com/caarlos0/env"
 	"github.com/go-resty/resty/v2"
 	"strconv"

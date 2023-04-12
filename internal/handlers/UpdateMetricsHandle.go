@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"github.com/JinFuuMugen/go-metrics-tpl.git/cmd/server/storage"
+	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/storage"
 	"github.com/go-chi/chi/v5"
 	"net/http"
 	"strconv"

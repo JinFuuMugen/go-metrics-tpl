@@ -2,7 +2,7 @@ package main
 
 import (
 	"flag"
-	"github.com/JinFuuMugen/go-metrics-tpl.git/cmd/server/handlers"
+	handlers2 "github.com/JinFuuMugen/go-metrics-tpl.git/internal/handlers"
 	"github.com/caarlos0/env"
 	"github.com/go-chi/chi/v5"
 	"net/http"
@@ -28,9 +28,9 @@ func main() {
 	}
 	flag.Parse()
 	rout := chi.NewRouter()
-	rout.HandleFunc(`/update/{metric_type}/{metric_name}/{metric_value}`, handlers.UpdateMetricsHandle)
-	rout.HandleFunc(`/`, handlers.MainHandle)
-	rout.HandleFunc(`/value/{metric_type}/{metric_name}`, handlers.GetMetricHandle)
+	rout.HandleFunc(`/update/{metric_type}/{metric_name}/{metric_value}`, handlers2.UpdateMetricsHandle)
+	rout.HandleFunc(`/`, handlers2.MainHandle)
+	rout.HandleFunc(`/value/{metric_type}/{metric_name}`, handlers2.GetMetricHandle)
 
 	err := http.ListenAndServe(*serverAddr, rout)
 	if err != nil {
