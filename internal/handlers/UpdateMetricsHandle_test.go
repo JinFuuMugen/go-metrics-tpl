@@ -1,7 +1,6 @@
-package tests
+package handlers
 
 import (
-	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/handlers"
 	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
 	"net/http"
@@ -57,7 +56,7 @@ func TestUpdateMetricsHandle(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			r := chi.NewRouter()
-			r.HandleFunc(`/update/{metric_type}/{metric_name}/{metric_value}`, handlers.UpdateMetricsHandle)
+			r.HandleFunc(`/update/{metric_type}/{metric_name}/{metric_value}`, UpdateMetricsHandle)
 
 			req, err := http.NewRequest(tt.method, tt.url, nil)
 			if err != nil {
