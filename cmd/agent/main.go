@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/JinFuuMugen/go-metrics-tpl.git/cmd/agent/monitors"
+	"github.com/caarlos0/env"
 	"github.com/go-resty/resty/v2"
 	"strconv"
 	"time"
@@ -11,6 +12,12 @@ import (
 
 type metricType interface {
 	float64 | int64
+}
+
+type Config struct {
+	Addr           string `env:"ADDRESS"`
+	ReportInterval int    `env:"REPORT_INTERVAL"`
+	PollInterval   int    `env:"POLL_INTERVAL"`
 }
 
 func sendPost[T metricType](serverAddr string, metricKind string, metricName string, metricValue T, client *resty.Client) (*resty.Response, error) {
@@ -27,13 +34,41 @@ func sendPost[T metricType](serverAddr string, metricKind string, metricName str
 }
 
 func main() {
-	serverAddr := flag.String("a", "localhost:8080", "server address")
-	poll := flag.Int("p", 2, "poll interval")
-	report := flag.Int("r", 10, "report interval")
-	flag.Parse()
+	var cfg Config
+	envParseError := env.Parse(&cfg)
+	if envParseError != nil {
+		panic(envParseError)
+	}
+	var serverAddr string
+	var poll int
+	var report int
 
-	pollInterval := time.Duration(*poll) * time.Second
-	reportInterval := time.Duration(*report) * time.Second
+	if cfg.Addr != "" {
+		serverAddr = cfg.Addr
+	} else {
+		serverAddr = *flag.String("a", "localhost:8080", "server address")
+	}
+
+	if cfg.PollInterval != 0 {
+		poll = cfg.PollInterval
+	} else {
+		poll = *flag.Int("p", 2, "poll interval")
+	}
+
+	if cfg.Addr != "" {
+		serverAddr = cfg.Addr
+	} else {
+		serverAddr = *flag.String("a", "localhost:8080", "server address")
+	}
+
+	if cfg.ReportInterval != 0 {
+		report = cfg.ReportInterval
+	} else {
+		poll = *flag.Int("r", 10, "report interval")
+	}
+
+	pollInterval := time.Duration(poll) * time.Second
+	reportInterval := time.Duration(report) * time.Second
 
 	GaugeMap := make(map[string]float64)
 	CounterMap := make(map[string]int64)
@@ -50,13 +85,13 @@ func main() {
 		if ticks == int(reportInterval/pollInterval) {
 			ticks = 0
 			for k, v := range GaugeMap {
-				resp, _ := sendPost(*serverAddr, "gauge", k, v, client)
+				resp, _ := sendPost(serverAddr, "gauge", k, v, client)
 				if resp != nil {
 					fmt.Println(resp.StatusCode())
 				}
 			}
 			for k, v := range CounterMap {
-				resp, _ := sendPost(*serverAddr, "counter", k, v, client)
+				resp, _ := sendPost(serverAddr, "counter", k, v, client)
 				if resp != nil {
 					fmt.Println(resp.StatusCode())
 				}
