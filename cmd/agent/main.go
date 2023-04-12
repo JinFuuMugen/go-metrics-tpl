@@ -55,16 +55,10 @@ func main() {
 		poll = *flag.Int("p", 2, "poll interval")
 	}
 
-	if cfg.Addr != "" {
-		serverAddr = cfg.Addr
-	} else {
-		serverAddr = *flag.String("a", "localhost:8080", "server address")
-	}
-
 	if cfg.ReportInterval != 0 {
 		report = cfg.ReportInterval
 	} else {
-		poll = *flag.Int("r", 10, "report interval")
+		report = *flag.Int("r", 10, "report interval")
 	}
 
 	pollInterval := time.Duration(poll) * time.Second
@@ -72,8 +66,8 @@ func main() {
 
 	GaugeMap := make(map[string]float64)
 	CounterMap := make(map[string]int64)
-
 	CounterMap["PollCounter"] = 1
+
 	ticks := 0
 
 	client := resty.New()
