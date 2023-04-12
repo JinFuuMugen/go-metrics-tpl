@@ -39,30 +39,31 @@ func main() {
 	if envParseError != nil {
 		panic(envParseError)
 	}
-	var serverAddr string
-	var poll int
-	var report int
+	var serverAddr *string
+	var poll *int
+	var report *int
 
 	if cfg.Addr != "" {
-		serverAddr = cfg.Addr
+		serverAddr = &cfg.Addr
 	} else {
-		serverAddr = *flag.String("a", "localhost:8080", "server address")
+		serverAddr = flag.String("a", "localhost:8080", "server address")
 	}
 
 	if cfg.PollInterval != 0 {
-		poll = cfg.PollInterval
+		poll = &cfg.PollInterval
 	} else {
-		poll = *flag.Int("p", 2, "poll interval")
+		poll = flag.Int("p", 2, "poll interval")
 	}
 
 	if cfg.ReportInterval != 0 {
-		report = cfg.ReportInterval
+		report = &cfg.ReportInterval
 	} else {
-		report = *flag.Int("r", 10, "report interval")
+		report = flag.Int("r", 10, "report interval")
 	}
+	flag.Parse()
 
-	pollInterval := time.Duration(poll) * time.Second
-	reportInterval := time.Duration(report) * time.Second
+	pollInterval := time.Duration(*poll) * time.Second
+	reportInterval := time.Duration(*report) * time.Second
 
 	GaugeMap := make(map[string]float64)
 	CounterMap := make(map[string]int64)
@@ -79,13 +80,13 @@ func main() {
 		if ticks == int(reportInterval/pollInterval) {
 			ticks = 0
 			for k, v := range GaugeMap {
-				resp, _ := sendPost(serverAddr, "gauge", k, v, client)
+				resp, _ := sendPost(*serverAddr, "gauge", k, v, client)
 				if resp != nil {
 					fmt.Println(resp.StatusCode())
 				}
 			}
 			for k, v := range CounterMap {
-				resp, _ := sendPost(serverAddr, "counter", k, v, client)
+				resp, _ := sendPost(*serverAddr, "counter", k, v, client)
 				if resp != nil {
 					fmt.Println(resp.StatusCode())
 				}

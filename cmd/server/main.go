@@ -13,25 +13,26 @@ type Config struct {
 }
 
 func main() {
+
 	var cfg Config
 	envParseError := env.Parse(&cfg)
 	if envParseError != nil {
 		panic(envParseError)
 	}
 
-	var serverAddr string
+	var serverAddr *string
 	if cfg.Addr != "" {
-		serverAddr = cfg.Addr
+		serverAddr = &cfg.Addr
 	} else {
-		serverAddr = *flag.String("a", "localhost:8080", "server address")
+		serverAddr = flag.String("a", "localhost:8080", "server address")
 	}
-
+	flag.Parse()
 	rout := chi.NewRouter()
 	rout.HandleFunc(`/update/{metric_type}/{metric_name}/{metric_value}`, handlers.UpdateMetricsHandle)
 	rout.HandleFunc(`/`, handlers.MainHandle)
 	rout.HandleFunc(`/value/{metric_type}/{metric_name}`, handlers.GetMetricHandle)
 
-	err := http.ListenAndServe(serverAddr, rout)
+	err := http.ListenAndServe(*serverAddr, rout)
 	if err != nil {
 		panic(err)
 	}
