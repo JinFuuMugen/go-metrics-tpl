@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"github.com/JinFuuMugen/go-metrics-tpl.git/cmd/server/storage"
 	"github.com/go-chi/chi/v5"
 	"net/http"
@@ -26,9 +25,6 @@ func UpdateMetricsHandle(w http.ResponseWriter, r *http.Request) {
 		}
 		storage.MS.AddCounter(metricName, value)
 		w.Header().Set("content-type", "text/plain; charset=utf-8")
-		counterValue, _ := storage.MS.GetCounter(metricName)
-		response := fmt.Sprintf("Counter value updated. Metric named %s is now %d.", metricName, counterValue)
-		w.Write([]byte(response))
 		return
 	case "gauge":
 		value, err := strconv.ParseFloat(metricValue, 64)
@@ -38,9 +34,6 @@ func UpdateMetricsHandle(w http.ResponseWriter, r *http.Request) {
 		}
 		storage.MS.AddGauge(metricName, value)
 		w.Header().Set("content-type", "text/plain; charset=utf-8")
-		gaugeValue, _ := storage.MS.GetGauge(metricName)
-		response := fmt.Sprintf("Gauge value updated. Metric named %s is now %f.", metricName, gaugeValue)
-		w.Write([]byte(response))
 		return
 	default:
 		http.Error(w, "Not a valid metric.", http.StatusNotImplemented)
