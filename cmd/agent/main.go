@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/monitors"
+	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/storage"
 	"github.com/caarlos0/env"
 	"github.com/go-resty/resty/v2"
 	"strconv"
@@ -68,25 +69,23 @@ func main() {
 	reportInterval := time.Duration(*report) * time.Second
 	reportTimer := time.NewTimer(reportInterval)
 
-	GaugeMap := make(map[string]float64)
-	CounterMap := make(map[string]int64)
-	CounterMap["PollCounter"] = 1
+	storage.MS.AddCounter("PollCounter", 1)
 
 	client := resty.New()
 
 	for {
 		select {
 		case <-pollTimer.C:
-			monitors.NewMonitor(&GaugeMap)
+			monitors.NewMonitor(&storage.MS.GaugeMap)
 			pollTimer.Reset(pollInterval)
 		case <-reportTimer.C:
-			for k, v := range GaugeMap {
+			for k, v := range storage.MS.GaugeMap {
 				resp, _ := sendPost(*serverAddr, "gauge", k, v, client)
 				if resp != nil {
 					fmt.Println(resp.StatusCode())
 				}
 			}
-			for k, v := range CounterMap {
+			for k, v := range storage.MS.CounterMap {
 				resp, _ := sendPost(*serverAddr, "counter", k, v, client)
 				if resp != nil {
 					fmt.Println(resp.StatusCode())
