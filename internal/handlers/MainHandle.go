@@ -12,7 +12,7 @@ func MainHandle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tmpl, err := template.ParseFiles("cmd/server/static/index.html")
+	tmpl, err := template.ParseFiles("internal/static/index.html")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
