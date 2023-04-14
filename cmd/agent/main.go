@@ -63,22 +63,23 @@ func main() {
 	flag.Parse()
 
 	pollInterval := time.Duration(*poll) * time.Second
+	pollTimer := time.NewTimer(pollInterval)
+
 	reportInterval := time.Duration(*report) * time.Second
+	reportTimer := time.NewTimer(reportInterval)
 
 	GaugeMap := make(map[string]float64)
 	CounterMap := make(map[string]int64)
 	CounterMap["PollCounter"] = 1
 
-	ticks := 0
-
 	client := resty.New()
 
 	for {
-		<-time.After(pollInterval)
-		monitors.NewMonitor(&GaugeMap)
-		ticks++
-		if ticks == int(reportInterval/pollInterval) {
-			ticks = 0
+		select {
+		case <-pollTimer.C:
+			monitors.NewMonitor(&GaugeMap)
+			pollTimer.Reset(pollInterval)
+		case <-reportTimer.C:
 			for k, v := range GaugeMap {
 				resp, _ := sendPost(*serverAddr, "gauge", k, v, client)
 				if resp != nil {
@@ -91,6 +92,7 @@ func main() {
 					fmt.Println(resp.StatusCode())
 				}
 			}
+			reportTimer.Reset(reportInterval)
 		}
 	}
 }
