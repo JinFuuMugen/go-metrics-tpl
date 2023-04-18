@@ -59,8 +59,8 @@ func (g Gauge) GetName() string {
 
 func (g Gauge) GetValueString() string {
 	f := func(num float64) string {
-		s := fmt.Sprintf("%.4f", num)
-		return strings.TrimRight(strings.TrimRight(s, "0"), ".")
+		s := fmt.Sprintf(`%.4f`, num)
+		return strings.TrimRight(strings.TrimRight(s, `0`), `.`)
 	}
 	return f(g.Value)
 }
@@ -85,7 +85,7 @@ func GetGauge(k string) (Gauge, error) {
 func AddCounter(k, v string) error {
 	value, err := strconv.ParseInt(v, 10, 64)
 	if err != nil {
-		return fmt.Errorf("cannot parse counter value: %w", err)
+		return fmt.Errorf(`cannot parse counter value: %w`, err)
 	}
 	defaultStorage.AddCounter(k, value)
 	return nil
@@ -94,7 +94,7 @@ func AddCounter(k, v string) error {
 func SetGauge(k, v string) error {
 	value, err := strconv.ParseFloat(v, 64)
 	if err != nil {
-		return fmt.Errorf("cannot parse gauge value: %w", err)
+		return fmt.Errorf(`cannot parse gauge value: %w`, err)
 	}
 	defaultStorage.SetGauge(k, value)
 	return nil

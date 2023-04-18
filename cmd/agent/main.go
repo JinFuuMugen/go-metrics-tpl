@@ -6,28 +6,23 @@ import (
 	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/sender"
 	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/storage"
 	"log"
-	"time"
 )
 
 func main() {
 	cfg, err := config.New()
 	if err != nil {
-		log.Fatalf("cannot create config: %s", err)
+		log.Fatalf(`cannot create config: %s`, err)
 	}
-	pollInterval := time.Duration(cfg.PollInterval) * time.Second
-	reportInterval := time.Duration(cfg.ReportInterval) * time.Second
-	pollTimer := cfg.PollTimer()
-	reportTimer := cfg.ReportTimer()
+	pollTicker := cfg.PollTicker()
+	reportTicker := cfg.ReportTicker()
 
-	m := monitors.NewMonitor(storage.NewStorage(), sender.NewSender(cfg.Addr))
+	m := monitors.NewMonitor(storage.NewStorage(), sender.NewSender(*cfg))
 	for {
 		select {
-		case <-pollTimer.C:
+		case <-pollTicker.C:
 			m.CollectMetrics()
-			pollTimer.Reset(pollInterval)
-		case <-reportTimer.C:
+		case <-reportTicker.C:
 			m.Dump()
-			reportTimer.Reset(reportInterval)
 		}
 	}
 }

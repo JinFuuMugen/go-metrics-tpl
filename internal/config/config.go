@@ -8,7 +8,7 @@ import (
 )
 
 type Config struct {
-	Addr           string `env:"ADDRESS"`
+	Addr           string `env:"ADDRESS""`
 	PollInterval   int    `env:"POLL_INTERVAL"`
 	ReportInterval int    `env:"REPORT_INTERVAL"`
 }
@@ -21,11 +21,11 @@ func New() (*Config, error) {
 	flag.Parse()
 
 	if envErr := env.Parse(cfg); envErr != nil {
-		log.Printf("cannot read env config: %s", envErr)
+		log.Printf(`cannot read env config: %s`, envErr)
 	}
 
-	if cfg.Addr == "" {
-		cfg.Addr = "localhost:8080"
+	if cfg.Addr == `` {
+		cfg.Addr = `localhost:8080`
 	}
 
 	if cfg.PollInterval == 0 {
@@ -38,10 +38,10 @@ func New() (*Config, error) {
 	return cfg, nil
 }
 
-func (cfg *Config) PollTimer() *time.Timer {
-	return time.NewTimer(time.Duration(cfg.PollInterval) * time.Second)
+func (cfg *Config) PollTicker() *time.Ticker {
+	return time.NewTicker(time.Duration(cfg.PollInterval) * time.Second)
 }
 
-func (cfg *Config) ReportTimer() *time.Timer {
-	return time.NewTimer(time.Duration(cfg.ReportInterval) * time.Second)
+func (cfg *Config) ReportTicker() *time.Ticker {
+	return time.NewTicker(time.Duration(cfg.ReportInterval) * time.Second)
 }

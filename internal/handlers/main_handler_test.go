@@ -16,16 +16,16 @@ func TestMainHandle(t *testing.T) {
 		wantedCode int
 	}{
 		{
-			name:       "wrong method",
+			name:       `wrong method`,
 			wantedCode: 405,
 			method:     http.MethodPost,
-			url:        "/",
+			url:        `/`,
 		},
 		{
-			name:       "wrong url",
+			name:       `wrong url`,
 			wantedCode: 404,
 			method:     http.MethodGet,
-			url:        "/123/",
+			url:        `/123/`,
 		},
 	}
 
