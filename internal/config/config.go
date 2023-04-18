@@ -8,7 +8,7 @@ import (
 )
 
 type Config struct {
-	Addr           string `env:"ADDRESS""`
+	Addr           string `env:"ADDRESS"`
 	PollInterval   int    `env:"POLL_INTERVAL"`
 	ReportInterval int    `env:"REPORT_INTERVAL"`
 }
