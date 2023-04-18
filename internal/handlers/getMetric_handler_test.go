@@ -56,7 +56,7 @@ func TestGetMetricHandle(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			r := chi.NewRouter()
-			r.Get(`/value/{metric_type}/{metric_name}`, GetMetricHandle)
+			r.Get(`/value/{metric_type}/{metric_name}`, GetMetricHandler)
 			req, err := http.NewRequest(tt.method, tt.url, nil)
 			if err != nil {
 				t.Fatal(err)
