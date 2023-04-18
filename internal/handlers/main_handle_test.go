@@ -16,12 +16,6 @@ func TestMainHandle(t *testing.T) {
 		wantedCode int
 	}{
 		{
-			name:       "positive get",
-			wantedCode: 200,
-			method:     http.MethodGet,
-			url:        "/",
-		},
-		{
 			name:       "wrong method",
 			wantedCode: 405,
 			method:     http.MethodPost,

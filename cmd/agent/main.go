@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/config"
 	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/monitors"
 	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/sender"
@@ -19,8 +18,6 @@ func main() {
 	reportInterval := time.Duration(cfg.ReportInterval) * time.Second
 	pollTimer := cfg.PollTimer()
 	reportTimer := cfg.ReportTimer()
-
-	fmt.Println(cfg.Addr)
 
 	m := monitors.NewMonitor(storage.NewStorage(), sender.NewSender(cfg.Addr))
 	for {
