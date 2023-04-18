@@ -3,6 +3,7 @@ package monitors
 import (
 	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/sender"
 	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/storage"
+	"log"
 	"math/rand"
 	"runtime"
 )
@@ -65,13 +66,13 @@ func (m *monitor) Dump() {
 	for _, c := range m.Storage.GetCounters() {
 		err := m.Processor.Process(c)
 		if err != nil {
-
+			log.Printf("error dumping metric: %s", err)
 		}
 	}
 	for _, g := range m.Storage.GetGauges() {
 		err := m.Processor.Process(g)
 		if err != nil {
-
+			log.Printf("error dumping metric: %s", err)
 		}
 	}
 }

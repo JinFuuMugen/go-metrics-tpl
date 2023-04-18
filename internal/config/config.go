@@ -2,8 +2,8 @@ package config
 
 import (
 	"flag"
+	"fmt"
 	"github.com/caarlos0/env"
-	"log"
 	"time"
 )
 
@@ -20,8 +20,8 @@ func New() (*Config, error) {
 	flag.IntVar(&cfg.ReportInterval, `r`, cfg.ReportInterval, `poll interval`)
 	flag.Parse()
 
-	if envErr := env.Parse(cfg); envErr != nil {
-		log.Printf(`cannot read env config: %s`, envErr)
+	if err := env.Parse(cfg); err != nil {
+		return nil, fmt.Errorf(`cannot read env config: %w`, err)
 	}
 
 	if cfg.Addr == `` {
