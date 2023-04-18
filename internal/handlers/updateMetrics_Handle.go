@@ -8,35 +8,31 @@ import (
 )
 
 func UpdateMetricsHandle(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Not a valid HTTP method.", http.StatusMethodNotAllowed)
-		return
-	}
 	metricType := chi.URLParam(r, "metric_type")
 	metricName := chi.URLParam(r, "metric_name")
 	metricValue := chi.URLParam(r, "metric_value")
 
 	switch metricType {
-	case "counter":
-		value, err := strconv.ParseInt(metricValue, 10, 64)
+	case storage.MetricTypeCounter:
+		_, err := strconv.ParseInt(metricValue, 10, 64)
 		if err != nil {
 			http.Error(w, "Not a valid metric value.", http.StatusBadRequest)
 			return
 		}
-		storage.MS.AddCounter(metricName, value)
+		storage.AddCounter(metricName, metricValue)
 		w.Header().Set("content-type", "text/plain; charset=utf-8")
 		return
-	case "gauge":
-		value, err := strconv.ParseFloat(metricValue, 64)
+	case storage.MetricTypeGauge:
+		_, err := strconv.ParseFloat(metricValue, 64)
 		if err != nil {
 			http.Error(w, "Not a valid metric value.", http.StatusBadRequest)
 			return
 		}
-		storage.MS.AddGauge(metricName, value)
+		storage.SetGauge(metricName, metricValue)
 		w.Header().Set("content-type", "text/plain; charset=utf-8")
 		return
 	default:
-		http.Error(w, "Not a valid metric.", http.StatusNotImplemented)
+		http.Error(w, "Unsupported metric type", http.StatusNotImplemented)
 		return
 	}
 }
