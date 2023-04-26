@@ -27,5 +27,4 @@ func UpdateMetricsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set(`content-type`, `text/plain; charset=utf-8`)
-	w.WriteHeader(http.StatusOK)
 }
