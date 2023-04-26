@@ -30,4 +30,5 @@ func GetMetricHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Write([]byte(m.GetValueString()))
 	w.Header().Add(`Content-Type`, `text/plain`)
+	w.WriteHeader(http.StatusOK)
 }
