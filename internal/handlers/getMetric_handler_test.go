@@ -13,8 +13,8 @@ import (
 )
 
 func TestGetMetricHandle(t *testing.T) {
-	testGauge := `{"id":"Some", "type":"gauge"}`
-	testCounter := `{"id":"Some", "type":"counter"}`
+	testGauge := `{"id":"GetTestGauge", "type":"gauge"}`
+	testCounter := `{"id":"GetTestCounter", "type":"counter"}`
 	testWrongMetric := `{"id":"Some", "type":"qwert"}`
 	testValue := 123.123
 	testDelta := int64(123)
@@ -34,7 +34,7 @@ func TestGetMetricHandle(t *testing.T) {
 			url:        `/value/`,
 			body:       testGauge,
 			wantedBody: models.Metrics{
-				ID:    "Some",
+				ID:    "GetTestGauge",
 				MType: "gauge",
 				Delta: nil,
 				Value: &testValue,
@@ -47,7 +47,7 @@ func TestGetMetricHandle(t *testing.T) {
 			url:        `/value/`,
 			body:       testCounter,
 			wantedBody: models.Metrics{
-				ID:    "Some",
+				ID:    "GetTestCounter",
 				MType: "counter",
 				Delta: &testDelta,
 				Value: nil,
@@ -76,8 +76,8 @@ func TestGetMetricHandle(t *testing.T) {
 		},
 	}
 
-	storage.SetGauge(`Some`, testValue)
-	storage.AddCounter(`Some`, testDelta)
+	storage.SetGauge(`GetTestGauge`, testValue)
+	storage.AddCounter(`GetTestCounter`, testDelta)
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			r := chi.NewRouter()

@@ -38,7 +38,7 @@ func TestUpdateMetricsHandlePlain(t *testing.T) {
 			name:       `wrong url`,
 			wantedCode: 404,
 			method:     http.MethodPost,
-			url:        `/update`,
+			url:        `/update/`,
 		},
 		{
 			name:       `wrong metric`,
