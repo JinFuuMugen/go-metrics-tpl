@@ -41,9 +41,7 @@ func (s *sender) Process(m storage.Metric) error {
 		}
 	}
 	url := `http://` + s.Addr + `/update/`
-	//+ m.GetType() + `/` +  + `/` + m.GetValueString()
-	data := make([]byte, 0)
-	data, err = json.Marshal(models.Metrics{
+	data, err := json.Marshal(models.Metrics{
 		ID:    name,
 		MType: mType,
 		Delta: &delta,
