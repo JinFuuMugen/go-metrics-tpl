@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-func MainHandler(w http.ResponseWriter, r *http.Request) {
+func MainHandler(w http.ResponseWriter, _ *http.Request) {
 	tmpl, err := template.ParseFiles(`internal/static/index.html`)
 	if err != nil {
 		http.Error(w, fmt.Sprintf(`cannot parse template: %s`, err), http.StatusInternalServerError)

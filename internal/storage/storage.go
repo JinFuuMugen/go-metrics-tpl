@@ -82,22 +82,12 @@ func GetGauge(k string) (Gauge, error) {
 	return defaultStorage.GetGauge(k)
 }
 
-func AddCounter(k, v string) error {
-	value, err := strconv.ParseInt(v, 10, 64)
-	if err != nil {
-		return fmt.Errorf(`cannot parse counter value: %w`, err)
-	}
-	defaultStorage.AddCounter(k, value)
-	return nil
+func AddCounter(k string, v int64) {
+	defaultStorage.AddCounter(k, v)
 }
 
-func SetGauge(k, v string) error {
-	value, err := strconv.ParseFloat(v, 64)
-	if err != nil {
-		return fmt.Errorf(`cannot parse gauge value: %w`, err)
-	}
-	defaultStorage.SetGauge(k, value)
-	return nil
+func SetGauge(k string, v float64) {
+	defaultStorage.SetGauge(k, v)
 }
 func GetCounters() []Counter {
 	return defaultStorage.GetCounters()

@@ -1,9 +1,12 @@
 package sender
 
 import (
+	"encoding/json"
 	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/config"
+	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/models"
 	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/storage"
 	"github.com/go-resty/resty/v2"
+	"strconv"
 )
 
 type Sender interface {
@@ -20,7 +23,26 @@ func NewSender(cfg config.Config) *sender {
 }
 
 func (s *sender) Process(m storage.Metric) error {
-	url := `http://` + s.Addr + `/update/` + m.GetType() + `/` + m.GetName() + `/` + m.GetValueString()
-	_, err := s.client.R().Post(url)
+	var err error
+	name := m.GetName()
+	mType := m.GetType()
+	var value float64
+	var delta int64
+	switch mType {
+	case storage.MetricTypeCounter:
+		delta, err = strconv.ParseInt(m.GetValueString(), 10, 64)
+	case storage.MetricTypeGauge:
+		value, err = strconv.ParseFloat(m.GetValueString(), 64)
+	}
+	url := `http://` + s.Addr + `/update/`
+	//+ m.GetType() + `/` +  + `/` + m.GetValueString()
+	data := make([]byte, 0)
+	data, err = json.Marshal(models.Metrics{
+		ID:    name,
+		MType: mType,
+		Delta: &delta,
+		Value: &value,
+	})
+	_, err = s.client.R().SetHeader("Content-Type", "application/json").SetBody(data).Post(url)
 	return err
 }
