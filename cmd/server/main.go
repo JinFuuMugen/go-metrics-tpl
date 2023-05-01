@@ -17,9 +17,13 @@ func main() {
 	sug := logger.Initialize()
 
 	rout := chi.NewRouter()
-	rout.Post(`/update/`, logger.HandlerLogger(handlers.UpdateMetricsHandler, sug))
+
 	rout.Get(`/`, logger.HandlerLogger(handlers.MainHandler, sug))
+
+	rout.Post(`/update/`, logger.HandlerLogger(handlers.UpdateMetricsHandler, sug))
 	rout.Post(`/value/`, logger.HandlerLogger(handlers.GetMetricHandler, sug))
+	rout.Post(`/update/{metric_type}/{metric_name}/{metric_value}`, logger.HandlerLogger(handlers.UpdateMetricsPlainHandler, sug))
+	rout.Get(`/value/{metric_type}/{metric_name}`, logger.HandlerLogger(handlers.GetMetricPlainHandler, sug))
 
 	if err = http.ListenAndServe(cfg.Addr, rout); err != nil {
 		log.Fatalf(`cannot start server: %s`, err)
