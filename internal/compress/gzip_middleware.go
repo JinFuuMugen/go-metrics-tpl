@@ -13,6 +13,7 @@ func GzipMiddleware(next http.Handler) http.Handler {
 				gz, err := gzip.NewReader(r.Body)
 				if err != nil {
 					http.Error(w, err.Error(), http.StatusBadRequest)
+					next.ServeHTTP(w, r)
 					return
 				}
 				defer gz.Close()
