@@ -52,18 +52,16 @@ func UpdateMetricsHandler(w http.ResponseWriter, r *http.Request) {
 	case storage.MetricTypeGauge:
 		storage.SetGauge(metric.ID, *metric.Value)
 	default:
-		if err != nil {
-			err := fmt.Errorf(`unsupported metric type`)
-			response := models.ErrorResponse{
-				Message: err.Error(),
-				Status:  http.StatusNotImplemented,
-			}
-			jsonResponse, _ := json.Marshal(response)
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(response.Status)
-			w.Write(jsonResponse)
-			return
+		err := fmt.Errorf(`unsupported metric type`)
+		response := models.ErrorResponse{
+			Message: err.Error(),
+			Status:  http.StatusNotImplemented,
 		}
+		jsonResponse, _ := json.Marshal(response)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(response.Status)
+		w.Write(jsonResponse)
+		return
 	}
 	jsonBytes, err := json.Marshal(metric)
 	if err != nil {
