@@ -23,31 +23,3 @@ func (m *Metrics) SetValue(valueString string) error {
 	}
 	return err
 }
-
-//func (m *Metrics) UnmarshalJSON(data []byte) (err error) {
-//	type MetricsAlias Metrics
-//
-//	aliasValue := &struct {
-//		*MetricsAlias
-//		Delta string `json:"delta,omitempty"`
-//		Value string `json:"value,omitempty"`
-//	}{
-//		MetricsAlias: (*MetricsAlias)(m),
-//	}
-//	if err = json.Unmarshal(data, aliasValue); err != nil {
-//		return
-//	}
-//	switch aliasValue.MType {
-//	case storage.MetricTypeCounter:
-//		var tmp int64
-//		tmp, err = strconv.ParseInt(aliasValue.Delta, 10, 64)
-//		m.Delta = &tmp
-//	case storage.MetricTypeGauge:
-//		var tmp float64
-//		tmp, err = strconv.ParseFloat(aliasValue.Value, 64)
-//		m.Value = &tmp
-//	default:
-//		err = errors.New(`error processing json: Can't find metric type`)
-//	}
-//	return
-//}
