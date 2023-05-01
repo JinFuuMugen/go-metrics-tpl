@@ -25,7 +25,7 @@ func HandlerLogger(h http.HandlerFunc, sug zap.SugaredLogger) http.HandlerFunc {
 		duration := time.Since(start)
 
 		responseData := &responseData{
-			status: 0,
+			status: 200,
 			size:   0,
 		}
 		lw := loggingResponseWriter{

@@ -14,6 +14,7 @@ type (
 		GetType() string
 		GetName() string
 		GetValueString() string
+		GetValue() interface{}
 	}
 
 	Storage interface {
@@ -45,6 +46,10 @@ func (c Counter) GetName() string {
 	return c.Name
 }
 
+func (c Counter) GetValue() interface{} {
+	return int64(c.Value)
+}
+
 func (c Counter) GetValueString() string {
 	return strconv.FormatInt(c.Value, 10)
 }
@@ -55,6 +60,10 @@ func (g Gauge) GetType() string {
 
 func (g Gauge) GetName() string {
 	return g.Name
+}
+
+func (g Gauge) GetValue() interface{} {
+	return float64(g.Value)
 }
 
 func (g Gauge) GetValueString() string {

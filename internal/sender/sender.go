@@ -6,7 +6,6 @@ import (
 	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/models"
 	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/storage"
 	"github.com/go-resty/resty/v2"
-	"strconv"
 )
 
 type Sender interface {
@@ -28,18 +27,15 @@ func (s *sender) Process(m storage.Metric) error {
 	mType := m.GetType()
 	var value float64
 	var delta int64
+
 	switch mType {
-	case storage.MetricTypeCounter:
-		delta, err = strconv.ParseInt(m.GetValueString(), 10, 64)
-		if err != nil {
-			return err
-		}
 	case storage.MetricTypeGauge:
-		value, err = strconv.ParseFloat(m.GetValueString(), 64)
-		if err != nil {
-			return err
-		}
+		value = m.GetValue().(float64)
+	case storage.MetricTypeCounter:
+		delta = m.GetValue().(int64)
+
 	}
+
 	url := `http://` + s.Addr + `/update/`
 	data, err := json.Marshal(models.Metrics{
 		ID:    name,

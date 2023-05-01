@@ -29,7 +29,7 @@ func (m *monitor) collectRuntime() {
 	m.Storage.SetGauge(`GCCPUFraction`, rtm.GCCPUFraction)        //float64
 	m.Storage.SetGauge(`GCSys`, float64(rtm.GCSys))               //uint64
 	m.Storage.SetGauge(`HeapAlloc`, float64(rtm.HeapAlloc))       //uint64
-	m.Storage.SetGauge(`HeapAlloc`, float64(rtm.HeapIdle))        //uint64
+	m.Storage.SetGauge(`HeapIdle`, float64(rtm.HeapIdle))         //uint64
 	m.Storage.SetGauge(`HeapInuse`, float64(rtm.HeapInuse))       //uint64
 	m.Storage.SetGauge(`HeapObjects`, float64(rtm.HeapObjects))   //uint64
 	m.Storage.SetGauge(`HeapReleased`, float64(rtm.HeapReleased)) //uint64
