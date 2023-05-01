@@ -31,8 +31,14 @@ func (s *sender) Process(m storage.Metric) error {
 	switch mType {
 	case storage.MetricTypeCounter:
 		delta, err = strconv.ParseInt(m.GetValueString(), 10, 64)
+		if err != nil {
+			return err
+		}
 	case storage.MetricTypeGauge:
 		value, err = strconv.ParseFloat(m.GetValueString(), 64)
+		if err != nil {
+			return err
+		}
 	}
 	url := `http://` + s.Addr + `/update/`
 	//+ m.GetType() + `/` +  + `/` + m.GetValueString()
@@ -43,6 +49,9 @@ func (s *sender) Process(m storage.Metric) error {
 		Delta: &delta,
 		Value: &value,
 	})
+	if err != nil {
+		return err
+	}
 	_, err = s.client.R().SetHeader("Content-Type", "application/json").SetBody(data).Post(url)
 	return err
 }
