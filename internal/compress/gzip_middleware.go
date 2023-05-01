@@ -20,6 +20,8 @@ func GzipMiddleware(next http.Handler) http.Handler {
 				r.Header.Del("Content-Length")
 				//r.Header.Set("Content-Encoding", "gzip")
 			}
+		} else {
+			r.Header.Del("Content-Encoding")
 		}
 		next.ServeHTTP(w, r)
 	})
