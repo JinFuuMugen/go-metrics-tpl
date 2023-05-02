@@ -69,6 +69,6 @@ func (s *sender) Process(m storage.Metric) error {
 	if err != nil {
 		return err
 	}
-	_, err = s.client.R().SetHeader("Content-Type", "application/json").SetHeader("Content-Encoding", "gzip").SetHeader("Accept-Encoding", "gzip").SetBody(compressedData).Post(url)
+	_, err = s.client.R().SetHeader("Content-Type", "application/json").SetHeader("Content-Encoding", "gzip").SetBody(compressedData).Post(url)
 	return err
 }
