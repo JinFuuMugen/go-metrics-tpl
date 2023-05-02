@@ -13,6 +13,7 @@ func MainHandler(w http.ResponseWriter, _ *http.Request) {
 		http.Error(w, fmt.Sprintf(`cannot parse template: %s`, err), http.StatusInternalServerError)
 		return
 	}
+	w.Header().Set(`Content-Type`, `text/html; charset=utf-8`)
 	err = tmpl.Execute(w, struct {
 		Gauges   []storage.Gauge
 		Counters []storage.Counter
@@ -21,5 +22,4 @@ func MainHandler(w http.ResponseWriter, _ *http.Request) {
 		http.Error(w, fmt.Sprintf(`cannot execute template: %s`, err), http.StatusInternalServerError)
 		return
 	}
-	w.Header().Add(`Content-Type`, `text/html; charset=utf-8`)
 }

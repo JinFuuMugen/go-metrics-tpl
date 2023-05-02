@@ -1,9 +1,11 @@
 package compress
 
 import (
+	"bufio"
 	"bytes"
 	"compress/gzip"
 	"io"
+	"net"
 	"net/http"
 	"strings"
 )
@@ -32,7 +34,6 @@ func GzipMiddleware(next http.Handler) http.Handler {
 
 		if strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
 			w.Header().Set("Content-Encoding", "gzip")
-
 			gzipWriter := gzip.NewWriter(w)
 			defer gzipWriter.Close()
 
@@ -55,4 +56,7 @@ func (w gzipResponseWriter) Write(b []byte) (int, error) {
 
 func (w gzipResponseWriter) Flush() {
 	w.ResponseWriter.(http.Flusher).Flush()
+}
+func (w gzipResponseWriter) Hijack() (net.Conn, *bufio.ReadWriter, error) {
+	return w.ResponseWriter.(http.Hijacker).Hijack()
 }
