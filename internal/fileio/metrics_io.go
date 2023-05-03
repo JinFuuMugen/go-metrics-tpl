@@ -41,7 +41,6 @@ func SaveMetrics(filepath string, counters []storage.Counter, gauges []storage.G
 		return err
 	}
 
-	defer file.Close()
 	if _, err = file.Write(jsonData); err != nil {
 		return err
 	}
@@ -55,6 +54,7 @@ func LoadMetrics(filepath string) error {
 	if err != nil {
 		return err
 	}
+	defer file.Close()
 
 	scanner := bufio.NewScanner(file)
 	if !scanner.Scan() {

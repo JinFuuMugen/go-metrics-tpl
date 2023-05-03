@@ -25,4 +25,3 @@ vendor/
 .vscode
 
 # Preloaded files
-/tmp/*.json

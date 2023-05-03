@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/compress"
 	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/config"
 	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/fileio"
@@ -24,7 +25,7 @@ func main() {
 		if cfg.Restore {
 			err := fileio.LoadMetrics(cfg.FileStoragePath)
 			if err != nil {
-				log.Fatalf(`cannot read metrics: %s`, err)
+				fmt.Errorf(`cannot read metrics: %s`, err)
 			}
 		}
 
