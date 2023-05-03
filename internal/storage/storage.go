@@ -47,7 +47,7 @@ func (c Counter) GetName() string {
 }
 
 func (c Counter) GetValue() interface{} {
-	return int64(c.Value)
+	return c.Value
 }
 
 func (c Counter) GetValueString() string {
@@ -63,7 +63,7 @@ func (g Gauge) GetName() string {
 }
 
 func (g Gauge) GetValue() interface{} {
-	return float64(g.Value)
+	return g.Value
 }
 
 func (g Gauge) GetValueString() string {
