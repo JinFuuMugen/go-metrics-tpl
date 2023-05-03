@@ -29,13 +29,10 @@ func main() {
 		}
 
 		go func() {
-			for {
-				select {
-				case <-storeTicker.C:
-					err := fileio.SaveMetrics(cfg.FileStoragePath, storage.GetCounters(), storage.GetGauges())
-					if err != nil {
-						log.Fatalf(`cannot write metrics: %s`, err)
-					}
+			for range storeTicker.C {
+				err := fileio.SaveMetrics(cfg.FileStoragePath, storage.GetCounters(), storage.GetGauges())
+				if err != nil {
+					log.Fatalf(`cannot write metrics: %s`, err)
 				}
 			}
 		}()
