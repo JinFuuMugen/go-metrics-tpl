@@ -26,12 +26,22 @@ func UpdateMetricsHandler(w http.ResponseWriter, r *http.Request) {
 
 	switch metric.MType {
 	case storage.MetricTypeCounter:
-		storage.AddCounter(metric.ID, *metric.Delta)
+		delta, err := metric.GetDelta()
+		if err != nil {
+			http.Error(w, `bad request`, http.StatusBadRequest)
+			return
+		}
+		storage.AddCounter(metric.ID, delta)
 		tmpCounter, _ := storage.GetCounter(metric.ID)
-		delta := tmpCounter.GetValue().(int64)
-		metric.SetDelta(delta)
+		deltaNew := tmpCounter.GetValue().(int64)
+		metric.SetDelta(deltaNew)
 	case storage.MetricTypeGauge:
-		storage.SetGauge(metric.ID, *metric.Value)
+		value, err := metric.GetValue()
+		if err != nil {
+			http.Error(w, `bad request`, http.StatusBadRequest)
+			return
+		}
+		storage.SetGauge(metric.ID, value)
 	default:
 		http.Error(w, `unsupported metric type.`, http.StatusNotImplemented)
 		return

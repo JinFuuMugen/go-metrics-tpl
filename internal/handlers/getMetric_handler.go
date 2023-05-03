@@ -20,12 +20,10 @@ func GetMetricHandler(w http.ResponseWriter, r *http.Request) {
 	switch metric.MType {
 	case storage.MetricTypeGauge:
 		m, err = storage.GetGauge(metric.ID)
-		value := m.GetValue().(float64)
-		metric.Value = &value
+		metric.SetValue(m.GetValue().(float64))
 	case storage.MetricTypeCounter:
 		m, err = storage.GetCounter(metric.ID)
-		delta := m.GetValue().(int64)
-		metric.Delta = &delta
+		metric.SetDelta(m.GetValue().(int64))
 	default:
 		http.Error(w, `Unsupported metric type`, http.StatusNotImplemented)
 		return
