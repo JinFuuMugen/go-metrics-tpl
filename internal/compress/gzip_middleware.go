@@ -1,17 +1,17 @@
 package compress
 
 import (
-	"bufio"
 	"bytes"
 	"compress/gzip"
+	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/logger"
 	"io"
-	"net"
 	"net/http"
 	"strings"
 )
 
 func GzipMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	sug := logger.Initialize()
+	return logger.HandlerLogger(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if strings.Contains(r.Header.Get("Content-Encoding"), "gzip") {
 			if strings.Contains(r.Header.Get("Content-Type"), "application/json") || strings.Contains(r.Header.Get("Content-Type"), "text/html") {
 				reader, err := gzip.NewReader(r.Body)
@@ -42,7 +42,7 @@ func GzipMiddleware(next http.Handler) http.Handler {
 		} else {
 			next.ServeHTTP(w, r)
 		}
-	})
+	}), sug)
 }
 
 type gzipResponseWriter struct {
@@ -56,7 +56,4 @@ func (w gzipResponseWriter) Write(b []byte) (int, error) {
 
 func (w gzipResponseWriter) Flush() {
 	w.ResponseWriter.(http.Flusher).Flush()
-}
-func (w gzipResponseWriter) Hijack() (net.Conn, *bufio.ReadWriter, error) {
-	return w.ResponseWriter.(http.Hijacker).Hijack()
 }
