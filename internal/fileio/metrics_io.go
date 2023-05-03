@@ -40,6 +40,7 @@ func SaveMetrics(filepath string, counters []storage.Counter, gauges []storage.G
 	if err != nil {
 		return err
 	}
+	defer file.Close()
 
 	if _, err = file.Write(jsonData); err != nil {
 		return err
