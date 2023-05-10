@@ -17,14 +17,14 @@ func (m *Metrics) SetValue(value float64) {
 }
 func (m *Metrics) GetValue() (float64, error) {
 	if m.Value == nil {
-		return 0, errors.New(`no value`)
+		return 0, errors.New("no value")
 	}
 	return *m.Value, nil
 }
 
 func (m *Metrics) GetDelta() (int64, error) {
 	if m.Delta == nil {
-		return 0, errors.New(`no delta`)
+		return 0, errors.New("no delta")
 	}
 	return *m.Delta, nil
 }

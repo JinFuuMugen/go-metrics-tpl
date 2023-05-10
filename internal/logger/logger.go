@@ -1,23 +1,30 @@
 package logger
 
 import (
+	"fmt"
 	"go.uber.org/zap"
-	"log"
 	"net/http"
 	"time"
 )
 
-func Initialize() zap.SugaredLogger {
+var log zap.SugaredLogger
+
+func Init() error {
 	logger, err := zap.NewDevelopment()
 	if err != nil {
-		log.Fatalf("can't initialize zap logger: %v", err)
+		return fmt.Errorf("can't initialize zap logger: %w", err)
 	}
 	defer logger.Sync()
 	sug := *logger.Sugar()
-	return sug
+	log = sug
+	return nil
 }
 
-func HandlerLogger(h http.HandlerFunc, sug zap.SugaredLogger) http.HandlerFunc {
+func GetLogger() zap.SugaredLogger {
+	return log
+}
+
+func HandlerLogger(h http.HandlerFunc, log zap.SugaredLogger) http.HandlerFunc {
 	logFn := func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 		uri := r.RequestURI
@@ -25,7 +32,7 @@ func HandlerLogger(h http.HandlerFunc, sug zap.SugaredLogger) http.HandlerFunc {
 		duration := time.Since(start)
 
 		responseData := &responseData{
-			status: 200,
+			status: http.StatusOK,
 			size:   0,
 		}
 		lw := loggingResponseWriter{
@@ -35,7 +42,7 @@ func HandlerLogger(h http.HandlerFunc, sug zap.SugaredLogger) http.HandlerFunc {
 
 		h.ServeHTTP(&lw, r)
 
-		sug.Infoln(
+		log.Infoln(
 			"uri", uri,
 			"method", method,
 			"duration", duration,
@@ -60,8 +67,11 @@ type (
 
 func (r *loggingResponseWriter) Write(b []byte) (int, error) {
 	size, err := r.ResponseWriter.Write(b)
+	if err != nil {
+		return 0, fmt.Errorf("cannot implement ResponseWriter: %w", err)
+	}
 	r.responseData.size += size
-	return size, err
+	return size, nil
 }
 func (r *loggingResponseWriter) WriteHeader(statusCode int) {
 	r.ResponseWriter.WriteHeader(statusCode)

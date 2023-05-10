@@ -19,6 +19,7 @@ func TestUpdateMetricsHandle(t *testing.T) {
 	testWrongValue := `{"id":"Some", "type":"counter", "delta":124.123}`
 	testValue := 124.24
 	testDelta := int64(124)
+	testDoubleDelta := int64(124 * 2)
 
 	tests := []struct {
 		method     string
@@ -29,10 +30,10 @@ func TestUpdateMetricsHandle(t *testing.T) {
 		wantedBody models.Metrics
 	}{
 		{
-			name:       `positive gauge post`,
+			name:       "positive gauge post",
 			wantedCode: 200,
 			method:     http.MethodPost,
-			url:        `/update/`,
+			url:        "/update/",
 			body:       testGauge,
 			wantedBody: models.Metrics{
 				ID:    "Some",
@@ -42,10 +43,10 @@ func TestUpdateMetricsHandle(t *testing.T) {
 			},
 		},
 		{
-			name:       `positive counter post`,
+			name:       "positive counter post",
 			wantedCode: 200,
 			method:     http.MethodPost,
-			url:        `/update/`,
+			url:        "/update/",
 			body:       testCounter,
 			wantedBody: models.Metrics{
 				ID:    "Some",
@@ -55,38 +56,52 @@ func TestUpdateMetricsHandle(t *testing.T) {
 			},
 		},
 		{
-			name:       `wrong method`,
+			name:       "positive update existing counter post",
+			wantedCode: 200,
+			method:     http.MethodPost,
+			url:        "/update/",
+			body:       testCounter,
+			wantedBody: models.Metrics{
+				ID:    "Some",
+				MType: "counter",
+				Delta: &testDoubleDelta,
+				Value: nil,
+			},
+		},
+		{
+			name:       "wrong method",
 			wantedCode: 405,
 			method:     http.MethodGet,
-			url:        `/update/`,
+			url:        "/update/",
 			body:       "",
 		},
 		{
-			name:       `wrong url`,
+			name:       "wrong url",
 			wantedCode: 404,
 			method:     http.MethodPost,
-			url:        `/updat`,
+			url:        "/updat",
 		},
 		{
-			name:       `wrong metric`,
+			name:       "wrong metric",
 			wantedCode: 501,
 			method:     http.MethodPost,
-			url:        `/update/`,
+			url:        "/update/",
 			body:       testWrongMetric,
 		},
 		{
-			name:       `bad metric value`,
+			name:       "bad metric value",
 			wantedCode: 400,
 			method:     http.MethodPost,
-			url:        `/update/`,
+			url:        "/update/",
 			body:       testWrongValue,
 		},
 	}
-	storage.NewStorage()
+
+	storage.Reset()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			r := chi.NewRouter()
-			r.Post(`/update/`, UpdateMetricsHandler)
+			r.Post("/update/", UpdateMetricsHandler)
 			req, err := http.NewRequest(tt.method, tt.url, strings.NewReader(tt.body))
 			req.Header.Set("Content-Type", "application/json")
 			if err != nil {

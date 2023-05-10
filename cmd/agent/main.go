@@ -11,7 +11,7 @@ import (
 func main() {
 	cfg, err := config.New()
 	if err != nil {
-		log.Fatalf(`cannot create config: %s`, err)
+		log.Fatalf("cannot create config: %s", err)
 	}
 	pollTicker := cfg.PollTicker()
 	reportTicker := cfg.ReportTicker()

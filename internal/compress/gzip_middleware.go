@@ -3,6 +3,7 @@ package compress
 import (
 	"bytes"
 	"compress/gzip"
+	"fmt"
 	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/logger"
 	"io"
 	"net/http"
@@ -10,24 +11,27 @@ import (
 )
 
 func GzipMiddleware(next http.Handler) http.Handler {
-	sug := logger.Initialize()
+	zapLogger := logger.GetLogger()
 	return logger.HandlerLogger(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if strings.Contains(r.Header.Get("Content-Encoding"), "gzip") {
 			if strings.Contains(r.Header.Get("Content-Type"), "application/json") || strings.Contains(r.Header.Get("Content-Type"), "text/html") {
 				reader, err := gzip.NewReader(r.Body)
 				if err != nil {
-					http.Error(w, `internal server error`, http.StatusInternalServerError)
+					zapLogger.Errorf("cannot create gzip reader: %s", err)
+					http.Error(w, fmt.Sprintf("internal server error: %s", err), http.StatusInternalServerError)
 					return
 				}
 				defer reader.Close()
 				decodedBody, err := io.ReadAll(reader)
 				if err != nil {
-					http.Error(w, `internal server error`, http.StatusInternalServerError)
+					zapLogger.Errorf("cannot decode body: %s", err)
+					http.Error(w, fmt.Sprintf("internal server error: %s", err), http.StatusInternalServerError)
 					return
 				}
 				r.Body = io.NopCloser(bytes.NewBuffer(decodedBody))
 			} else {
-				http.Error(w, `invalid content type for gzip encoding`, http.StatusBadRequest)
+				zapLogger.Errorf("invalid content type for gzip encoding")
+				http.Error(w, "invalid content type for gzip encoding", http.StatusBadRequest)
 				return
 			}
 		}
@@ -42,7 +46,7 @@ func GzipMiddleware(next http.Handler) http.Handler {
 		} else {
 			next.ServeHTTP(w, r)
 		}
-	}), sug)
+	}), zapLogger)
 }
 
 type gzipResponseWriter struct {

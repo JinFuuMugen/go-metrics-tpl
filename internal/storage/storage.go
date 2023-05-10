@@ -6,14 +6,16 @@ import (
 	"strings"
 )
 
-const MetricTypeGauge = `gauge`
-const MetricTypeCounter = `counter`
+const MetricTypeGauge = "gauge"
+const MetricTypeCounter = "counter"
 
 type (
 	Metric interface {
 		GetType() string
 		GetName() string
 		GetValueString() string
+
+		//TODO FIXME
 		GetValue() interface{}
 	}
 

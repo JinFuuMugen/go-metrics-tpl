@@ -43,7 +43,7 @@ func (ms *MemStorage) GetCounter(k string) (Counter, error) {
 	if exists {
 		return Counter{Name: k, Type: MetricTypeCounter, Value: c}, nil
 	} else {
-		return Counter{}, errors.New(`missing key`)
+		return Counter{}, errors.New("missing key")
 	}
 }
 
@@ -52,6 +52,6 @@ func (ms *MemStorage) GetGauge(k string) (Gauge, error) {
 	if exists {
 		return Gauge{Name: k, Type: MetricTypeGauge, Value: g}, nil
 	} else {
-		return Gauge{}, errors.New(`missing key`)
+		return Gauge{}, errors.New("missing key")
 	}
 }

@@ -3,17 +3,20 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/logger"
 	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/models"
 	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/storage"
 	"net/http"
 )
 
 func GetMetricHandler(w http.ResponseWriter, r *http.Request) {
+	zapLogger := logger.GetLogger()
 	decoder := json.NewDecoder(r.Body)
 	var metric models.Metrics
 	err := decoder.Decode(&metric)
 	if err != nil {
-		http.Error(w, `Bad request`, http.StatusBadRequest)
+		http.Error(w, "bad request", http.StatusBadRequest)
+		zapLogger.Errorf("cannot decode body: %s", err)
 		return
 	}
 	var m storage.Metric
@@ -25,21 +28,25 @@ func GetMetricHandler(w http.ResponseWriter, r *http.Request) {
 		m, err = storage.GetCounter(metric.ID)
 		metric.SetDelta(m.GetValue().(int64))
 	default:
-		http.Error(w, `Unsupported metric type`, http.StatusNotImplemented)
+		http.Error(w, "unsupported metric type", http.StatusNotImplemented)
+		zapLogger.Errorf("unsupported metric type")
 		return
 	}
 	if err != nil {
-		http.Error(w, fmt.Sprintf(`Metric is not found: %s`, err), http.StatusNotFound)
+		http.Error(w, fmt.Sprintf("metric is not found: %s", err), http.StatusNotFound)
+		zapLogger.Errorf("metric is not found: %s", err)
 		return
 	}
 	jsonBytes, err := json.Marshal(metric)
 	if err != nil {
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("Internal server error: %s", err), http.StatusInternalServerError)
+		zapLogger.Errorf("cannot serialize metric to json: %s", err)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
 	_, err = w.Write(jsonBytes)
 	if err != nil {
-		http.Error(w, `Can't write response`, http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("can't write response: %s", err), http.StatusInternalServerError)
+		zapLogger.Errorf("cannot write response: %s", err)
 	}
 }

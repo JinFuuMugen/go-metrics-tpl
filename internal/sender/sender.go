@@ -55,7 +55,6 @@ func (s *sender) Process(m storage.Metric) error {
 
 	}
 
-	url := `http://` + s.Addr + `/update/`
 	data, err := json.Marshal(models.Metrics{
 		ID:    name,
 		MType: mType,
@@ -63,12 +62,18 @@ func (s *sender) Process(m storage.Metric) error {
 		Value: &value,
 	})
 	if err != nil {
-		return err
+		return fmt.Errorf("cannot serialize metric: %w", err)
 	}
 	compressedData, err := s.Compress(data)
 	if err != nil {
-		return err
+		return fmt.Errorf("error while compressing data: %w", err)
 	}
+
+	url := "http://" + s.Addr + "/update/"
+
 	_, err = s.client.R().SetHeader("Content-Type", "application/json").SetHeader("Content-Encoding", "gzip").SetBody(compressedData).Post(url)
-	return err
+	if err != nil {
+		return fmt.Errorf("cannot send HTTP-Request: %w", err)
+	}
+	return nil
 }

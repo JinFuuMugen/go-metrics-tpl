@@ -6,6 +6,7 @@ import (
 	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/handlers"
 	"github.com/go-chi/chi/v5"
 	"io"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -13,6 +14,19 @@ import (
 )
 
 func TestGzipMiddleware(t *testing.T) {
+
+	// Gzip encode the string
+	var gzippedBytes bytes.Buffer
+	gzipWriter := gzip.NewWriter(&gzippedBytes)
+	_, err := gzipWriter.Write([]byte(`{"id":"BuckHashSys","type":"gauge","delta":0,"value":6347}`))
+	if err != nil {
+		log.Fatal("error gzipping data: ", err)
+	}
+	err = gzipWriter.Close()
+	if err != nil {
+		log.Fatal("error closing gzip writer: ", err)
+	}
+
 	testCases := []struct {
 		name                  string
 		method                string
@@ -76,7 +90,7 @@ func TestGzipMiddleware(t *testing.T) {
 			contentTypeHeader:     "application/json",
 			contentEncodingHeader: "gzip",
 			acceptEncodingHeader:  "gzip",
-			body:                  string([]byte{31, 139, 8, 0, 0, 0, 0, 0, 0, 255, 170, 86, 202, 76, 81, 178, 82, 114, 42, 77, 206, 246, 72, 44, 206, 8, 174, 44, 86, 210, 81, 42, 169, 44, 72, 85, 178, 82, 74, 79, 44, 77, 79, 85, 210, 81, 74, 73, 205, 41, 73, 84, 178, 50, 208, 81, 42, 75, 204, 41, 77, 85, 178, 50, 51, 54, 49, 175, 5, 4, 0, 0, 255, 255, 80, 28, 40, 38, 58, 0, 0, 0}),
+			body:                  gzippedBytes.String(),
 			expectedCode:          200,
 			expectedBody:          `{"id":"BuckHashSys","type":"gauge","delta":0,"value":6347}`,
 		},

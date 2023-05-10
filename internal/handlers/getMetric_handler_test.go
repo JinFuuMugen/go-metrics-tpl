@@ -28,10 +28,10 @@ func TestGetMetricHandle(t *testing.T) {
 		wantedBody models.Metrics
 	}{
 		{
-			name:       `positive gauge get`,
+			name:       "positive gauge get",
 			wantedCode: 200,
 			method:     http.MethodPost,
-			url:        `/value/`,
+			url:        "/value/",
 			body:       testGauge,
 			wantedBody: models.Metrics{
 				ID:    "GetTestGauge",
@@ -41,10 +41,10 @@ func TestGetMetricHandle(t *testing.T) {
 			},
 		},
 		{
-			name:       `positive counter get`,
+			name:       "positive counter get",
 			wantedCode: 200,
 			method:     http.MethodPost,
-			url:        `/value/`,
+			url:        "/value/",
 			body:       testCounter,
 			wantedBody: models.Metrics{
 				ID:    "GetTestCounter",
@@ -54,34 +54,34 @@ func TestGetMetricHandle(t *testing.T) {
 			},
 		},
 		{
-			name:       `wrong method`,
+			name:       "wrong method",
 			wantedCode: 405,
 			method:     http.MethodGet,
-			url:        `/value/`,
+			url:        "/value/",
 			body:       testGauge,
 		},
 		{
-			name:       `wrong url`,
+			name:       "wrong url",
 			wantedCode: 404,
 			method:     http.MethodPost,
-			url:        `/valu/`,
+			url:        "/valu/",
 			body:       testGauge,
 		},
 		{
-			name:       `wrong metric`,
+			name:       "wrong metric",
 			wantedCode: 501,
 			method:     http.MethodPost,
-			url:        `/value/`,
+			url:        "/value/",
 			body:       testWrongMetric,
 		},
 	}
 
-	storage.SetGauge(`GetTestGauge`, testValue)
-	storage.AddCounter(`GetTestCounter`, testDelta)
+	storage.SetGauge("GetTestGauge", testValue)
+	storage.AddCounter("GetTestCounter", testDelta)
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			r := chi.NewRouter()
-			r.Post(`/value/`, GetMetricHandler)
+			r.Post("/value/", GetMetricHandler)
 			req, err := http.NewRequest(tt.method, tt.url, strings.NewReader(tt.body))
 			if err != nil {
 				t.Fatal(err)

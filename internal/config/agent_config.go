@@ -21,11 +21,11 @@ func New() (*Config, error) {
 	flag.Parse()
 
 	if err := env.Parse(cfg); err != nil {
-		return nil, fmt.Errorf(`cannot read env config: %w`, err)
+		return nil, fmt.Errorf("cannot read env config: %w", err)
 	}
 
-	if cfg.Addr == `` {
-		cfg.Addr = `localhost:8080`
+	if cfg.Addr == "" {
+		cfg.Addr = "localhost:8080"
 	}
 
 	if cfg.PollInterval == 0 {

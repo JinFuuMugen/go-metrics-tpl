@@ -4,9 +4,14 @@ import (
 	"bufio"
 	"encoding/json"
 	"errors"
+	"fmt"
+	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/config"
+	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/logger"
 	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/models"
 	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/storage"
+	"net/http"
 	"os"
+	"time"
 )
 
 func SaveMetrics(filepath string, counters []storage.Counter, gauges []storage.Gauge) error {
@@ -33,17 +38,22 @@ func SaveMetrics(filepath string, counters []storage.Counter, gauges []storage.G
 
 	jsonData, err := json.Marshal(metrics)
 	if err != nil {
-		return err
+		return fmt.Errorf("cannot serialize metric to json: %w", err)
 	}
 
 	file, err := os.OpenFile(filepath, os.O_WRONLY|os.O_CREATE, 0666)
 	if err != nil {
-		return err
+		return fmt.Errorf("cannot open file to save metrics: %w", err)
 	}
 	defer file.Close()
 
+	err = file.Truncate(0)
+	if err != nil {
+		return fmt.Errorf("cannot truncate file: %w", err)
+	}
+
 	if _, err = file.Write(jsonData); err != nil {
-		return err
+		return fmt.Errorf("cannot write json to file: %w", err)
 	}
 	return nil
 }
@@ -53,33 +63,72 @@ func LoadMetrics(filepath string) error {
 
 	file, err := os.OpenFile(filepath, os.O_RDONLY|os.O_CREATE, 0666)
 	if err != nil {
-		return err
+		return fmt.Errorf("cannot open file to load metrics: %w", err)
 	}
 	defer file.Close()
 
 	scanner := bufio.NewScanner(file)
 	if !scanner.Scan() {
-		return scanner.Err()
+		return nil
 	}
 
 	fileData := scanner.Bytes()
 	err = json.Unmarshal(fileData, &metrics)
 	if err != nil {
-		return err
+		return fmt.Errorf("cannot deserialize file data: %w", err)
 	}
+	for _, m := range metrics {
+		switch m.MType {
+		case storage.MetricTypeCounter:
+			storage.AddCounter(m.ID, *m.Delta)
+		case storage.MetricTypeGauge:
+			storage.SetGauge(m.ID, *m.Value)
+		default:
+			return fmt.Errorf("cannot opperate metric: %w", errors.New("unsupported metric type"))
+		}
+	}
+	return nil
+}
 
-	return func(metrics []models.Metrics) error {
-		for _, m := range metrics {
-			switch m.MType {
-			case storage.MetricTypeCounter:
-				storage.AddCounter(m.ID, *m.Delta)
-			case storage.MetricTypeGauge:
-				storage.SetGauge(m.ID, *m.Value)
-			default:
-				err := errors.New(`wrong metric type`)
-				return err
+func Run(cfg *config.ServerConfig) {
+	zapLogger := logger.GetLogger()
+	if cfg.FileStoragePath != "" {
+
+		if cfg.Restore {
+			err := LoadMetrics(cfg.FileStoragePath)
+			if err != nil {
+				zapLogger.Fatalf("cannot read metrics: %s", err)
 			}
 		}
-		return nil
-	}(metrics)
+
+	}
+	if cfg.StoreInterval > 0 {
+		go runDumper(cfg)
+	}
+}
+
+func runDumper(cfg *config.ServerConfig) {
+	zapLogger := logger.GetLogger()
+	storeTicker := time.NewTicker(time.Duration(cfg.StoreInterval) * time.Second)
+	for range storeTicker.C {
+		err := SaveMetrics(cfg.FileStoragePath, storage.GetCounters(), storage.GetGauges())
+		if err != nil {
+			zapLogger.Fatalf("cannot save metrics: %s", err)
+		}
+	}
+}
+
+func GetDumperMiddleware(cfg *config.ServerConfig) func(next http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			zapLogger := logger.GetLogger()
+			if cfg.StoreInterval > 1 {
+				err := SaveMetrics(cfg.FileStoragePath, storage.GetCounters(), storage.GetGauges())
+				if err != nil {
+					zapLogger.Fatalf("cannot write metrics: %w", err)
+				}
+			}
+			next.ServeHTTP(w, r)
+		})
+	}
 }

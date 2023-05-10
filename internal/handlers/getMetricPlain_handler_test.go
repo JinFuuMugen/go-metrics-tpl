@@ -18,45 +18,45 @@ func TestGetMetricPlainHandle(t *testing.T) {
 		wantedValue string
 	}{
 		{
-			name:        `positive gauge get`,
+			name:        "positive gauge get",
 			wantedCode:  200,
 			method:      http.MethodGet,
-			url:         `/value/gauge/someG`,
-			wantedValue: `123.123`,
+			url:         "/value/gauge/someG",
+			wantedValue: "123.123",
 		},
 		{
-			name:        `positive counter get`,
+			name:        "positive counter get",
 			wantedCode:  200,
 			method:      http.MethodGet,
-			url:         `/value/counter/someC`,
-			wantedValue: `123`,
+			url:         "/value/counter/someC",
+			wantedValue: "123",
 		},
 		{
-			name:       `wrong method`,
+			name:       "wrong method",
 			wantedCode: 405,
 			method:     http.MethodPost,
-			url:        `/value/counter/someValue`,
+			url:        "/value/counter/someValue",
 		},
 		{
-			name:       `wrong url`,
+			name:       "wrong url",
 			wantedCode: 404,
 			method:     http.MethodGet,
-			url:        `/updat/gauge/some`,
+			url:        "/updat/gauge/some",
 		},
 		{
-			name:       `wrong metric`,
+			name:       "wrong metric",
 			wantedCode: 501,
 			method:     http.MethodGet,
-			url:        `/value/metr/someValue`,
+			url:        "/value/metr/someValue",
 		},
 	}
 
-	storage.SetGauge(`someG`, 123.123)
-	storage.AddCounter(`someC`, 123)
+	storage.SetGauge("someG", 123.123)
+	storage.AddCounter("someC", 123)
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			r := chi.NewRouter()
-			r.Get(`/value/{metric_type}/{metric_name}`, GetMetricPlainHandler)
+			r.Get("/value/{metric_type}/{metric_name}", GetMetricPlainHandler)
 			req, err := http.NewRequest(tt.method, tt.url, nil)
 			if err != nil {
 				t.Fatal(err)

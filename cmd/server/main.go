@@ -5,48 +5,38 @@ import (
 	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/config"
 	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/fileio"
 	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/handlers"
-	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/storage"
+	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/logger"
 	"github.com/go-chi/chi/v5"
 	"log"
 	"net/http"
 )
 
 func main() {
+	if err := logger.Init(); err != nil {
+		log.Fatalf("cannot create logger: %s", err)
+	}
+	zapLogger := logger.GetLogger()
+
 	cfg, err := config.LoadServerConfig()
 	if err != nil {
-		log.Fatalf(`cannot create config: %s`, err)
+		zapLogger.Fatalf("cannot create config: %s", err)
 	}
 
-	storeTicker := cfg.StoreTicker()
-
-	if cfg.FileStoragePath != `` {
-
-		if cfg.Restore {
-			err := fileio.LoadMetrics(cfg.FileStoragePath)
-			if err != nil {
-				log.Fatalf(`cannot read metrics: %s`, err)
-			}
-		}
-
-		go func() {
-			for range storeTicker.C {
-				err := fileio.SaveMetrics(cfg.FileStoragePath, storage.GetCounters(), storage.GetGauges())
-				if err != nil {
-					log.Fatalf(`cannot write metrics: %s`, err)
-				}
-			}
-		}()
-	}
+	fileio.Run(cfg)
 
 	rout := chi.NewRouter()
 
-	rout.Get(`/`, handlers.MainHandler)
-	rout.Post(`/update/`, handlers.UpdateMetricsHandler)
-	rout.Post(`/value/`, handlers.GetMetricHandler)
-	rout.Post(`/update/{metric_type}/{metric_name}/{metric_value}`, handlers.UpdateMetricsPlainHandler)
-	rout.Get(`/value/{metric_type}/{metric_name}`, handlers.GetMetricPlainHandler)
+	rout.Get("/", handlers.MainHandler)
+
+	rout.Route("/update", func(r chi.Router) {
+		r.Use(fileio.GetDumperMiddleware(cfg))
+		r.Post("/", handlers.UpdateMetricsHandler)
+		r.Post("/{metric_type}/{metric_name}/{metric_value}", handlers.UpdateMetricsPlainHandler)
+	})
+	rout.Post("/value/", handlers.GetMetricHandler)
+	rout.Get("/value/{metric_type}/{metric_name}", handlers.GetMetricPlainHandler)
 
 	if err = http.ListenAndServe(cfg.Addr, compress.GzipMiddleware(rout)); err != nil {
-		log.Fatalf(`cannot start server: %s`, err)
+		zapLogger.Fatalf("cannot start server: %s", err)
 	}
 }
