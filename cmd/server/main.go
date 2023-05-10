@@ -33,6 +33,7 @@ func main() {
 		r.Post("/", handlers.UpdateMetricsHandler)
 		r.Post("/{metric_type}/{metric_name}/{metric_value}", handlers.UpdateMetricsPlainHandler)
 	})
+
 	rout.Post("/value/", handlers.GetMetricHandler)
 	rout.Get("/value/{metric_type}/{metric_name}", handlers.GetMetricPlainHandler)
 
