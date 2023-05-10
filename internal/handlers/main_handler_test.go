@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/logger"
 	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
 	"net/http"
@@ -28,7 +29,7 @@ func TestMainHandle(t *testing.T) {
 			url:        "/123/",
 		},
 	}
-
+	logger.Init()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			r := chi.NewRouter()

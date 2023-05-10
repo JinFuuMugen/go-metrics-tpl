@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/logger"
 	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/models"
 	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/storage"
 	"github.com/go-chi/chi/v5"
@@ -96,7 +97,7 @@ func TestUpdateMetricsHandle(t *testing.T) {
 			body:       testWrongValue,
 		},
 	}
-
+	logger.Init()
 	storage.Reset()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

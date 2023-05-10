@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/logger"
 	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/storage"
 	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
@@ -50,7 +51,7 @@ func TestGetMetricPlainHandle(t *testing.T) {
 			url:        "/value/metr/someValue",
 		},
 	}
-
+	logger.Init()
 	storage.SetGauge("someG", 123.123)
 	storage.AddCounter("someC", 123)
 	for _, tt := range tests {

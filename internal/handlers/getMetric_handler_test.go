@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/logger"
 	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/models"
 	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/storage"
 	"github.com/go-chi/chi/v5"
@@ -75,7 +76,7 @@ func TestGetMetricHandle(t *testing.T) {
 			body:       testWrongMetric,
 		},
 	}
-
+	logger.Init()
 	storage.SetGauge("GetTestGauge", testValue)
 	storage.AddCounter("GetTestCounter", testDelta)
 	for _, tt := range tests {

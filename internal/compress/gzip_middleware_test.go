@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"compress/gzip"
 	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/handlers"
+	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/logger"
+	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/storage"
 	"github.com/go-chi/chi/v5"
 	"io"
 	"log"
@@ -95,6 +97,8 @@ func TestGzipMiddleware(t *testing.T) {
 			expectedBody:          `{"id":"BuckHashSys","type":"gauge","delta":0,"value":6347}`,
 		},
 	}
+	logger.Init()
+	storage.Reset()
 	for _, tt := range testCases {
 		t.Run(tt.name, func(t *testing.T) {
 			rout := chi.NewRouter()
