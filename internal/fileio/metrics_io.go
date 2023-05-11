@@ -36,7 +36,7 @@ func saveMetrics(filepath string, counters []storage.Counter, gauges []storage.G
 		})
 	}
 
-	jsonData, err := json.MarshalIndent(metrics, "", "\t")
+	jsonData, err := json.Marshal(metrics)
 	if err != nil {
 		return fmt.Errorf("cannot serialize metric to json: %w", err)
 	}
