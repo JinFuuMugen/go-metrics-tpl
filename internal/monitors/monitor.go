@@ -70,7 +70,7 @@ func (m *monitor) Dump() error {
 	for _, g := range m.Storage.GetGauges() {
 		err := m.Processor.Process(g)
 		if err != nil {
-			fmt.Errorf("error dumping metric: %w", err)
+			return fmt.Errorf("error dumping metric: %w", err)
 		}
 	}
 	return nil
