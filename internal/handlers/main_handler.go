@@ -9,20 +9,20 @@ import (
 )
 
 func MainHandler(w http.ResponseWriter, _ *http.Request) {
-	zapLogger := logger.GetLogger()
 	tmpl, err := template.ParseFiles("internal/static/index.html")
 	if err != nil {
-		zapLogger.Errorf("cannot parse template: %s", err)
+		logger.Errorf("cannot parse template: %s", err)
 		http.Error(w, fmt.Sprintf("cannot parse template: %s", err), http.StatusInternalServerError)
 		return
 	}
+
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	err = tmpl.Execute(w, struct {
 		Gauges   []storage.Gauge
 		Counters []storage.Counter
 	}{storage.GetGauges(), storage.GetCounters()})
 	if err != nil {
-		zapLogger.Errorf("cannot execute template: %s", err)
+		logger.Errorf("cannot execute template: %s", err)
 		http.Error(w, fmt.Sprintf("cannot execute template: %s", err), http.StatusInternalServerError)
 		return
 	}

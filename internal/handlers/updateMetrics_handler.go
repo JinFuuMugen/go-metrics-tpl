@@ -11,20 +11,19 @@ import (
 )
 
 func UpdateMetricsHandler(w http.ResponseWriter, r *http.Request) {
-	zapLogger := logger.GetLogger()
+
 	var buf bytes.Buffer
 	_, err := buf.ReadFrom(r.Body)
 	if err != nil {
-		zapLogger.Errorf("can't read request body: %s", err)
+		logger.Errorf("can't read request body: %s", err)
 		http.Error(w, fmt.Sprintf("can't read request body: %s", err), http.StatusBadRequest)
 		return
 	}
 
 	var metric models.Metrics
-
 	err = json.Unmarshal(buf.Bytes(), &metric)
 	if err != nil {
-		zapLogger.Errorf("can't process body: %s", err)
+		logger.Errorf("can't process body: %s", err)
 		http.Error(w, fmt.Sprintf("can't process body: %s", err), http.StatusBadRequest)
 		return
 	}
@@ -33,7 +32,7 @@ func UpdateMetricsHandler(w http.ResponseWriter, r *http.Request) {
 	case storage.MetricTypeCounter:
 		delta, err := metric.GetDelta()
 		if err != nil {
-			zapLogger.Errorf("cannot get delta: %s", err)
+			logger.Errorf("cannot get delta: %s", err)
 			http.Error(w, fmt.Sprintf("bad request: %s", err), http.StatusBadRequest)
 			return
 		}
@@ -44,26 +43,27 @@ func UpdateMetricsHandler(w http.ResponseWriter, r *http.Request) {
 	case storage.MetricTypeGauge:
 		value, err := metric.GetValue()
 		if err != nil {
-			zapLogger.Errorf("can't get value: %s", err)
+			logger.Errorf("can't get value: %s", err)
 			http.Error(w, fmt.Sprintf("bad request: %s", err), http.StatusBadRequest)
 			return
 		}
 		storage.SetGauge(metric.ID, value)
 	default:
-		zapLogger.Errorf("unsupported metric type")
+		logger.Errorf("unsupported metric type")
 		http.Error(w, "unsupported metric type", http.StatusNotImplemented)
 		return
 	}
+
 	jsonBytes, err := json.Marshal(metric)
 	if err != nil {
-		zapLogger.Errorf("can't serialize metric to json: %s", err)
+		logger.Errorf("can't serialize metric to json: %s", err)
 		http.Error(w, fmt.Sprintf("internal server error: %s", err), http.StatusInternalServerError)
 		return
 	}
+
 	w.Header().Set("Content-Type", "application/json")
 	_, err = w.Write(jsonBytes)
 	if err != nil {
-		zapLogger.Errorf("can't write response: %s", err)
-		http.Error(w, fmt.Sprintf("can't write response: %s", err), http.StatusInternalServerError)
+		logger.Fatalf("can't write response: %s", err)
 	}
 }

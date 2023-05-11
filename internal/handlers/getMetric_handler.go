@@ -10,16 +10,18 @@ import (
 )
 
 func GetMetricHandler(w http.ResponseWriter, r *http.Request) {
-	zapLogger := logger.GetLogger()
+
 	decoder := json.NewDecoder(r.Body)
 	var metric models.Metrics
 	err := decoder.Decode(&metric)
 	if err != nil {
 		http.Error(w, "bad request", http.StatusBadRequest)
-		zapLogger.Errorf("cannot decode body: %s", err)
+		logger.Errorf("cannot decode body: %s", err)
 		return
 	}
+
 	var m storage.Metric
+
 	switch metric.MType {
 	case storage.MetricTypeGauge:
 		m, err = storage.GetGauge(metric.ID)
@@ -29,24 +31,25 @@ func GetMetricHandler(w http.ResponseWriter, r *http.Request) {
 		metric.SetDelta(m.GetValue().(int64))
 	default:
 		http.Error(w, "unsupported metric type", http.StatusNotImplemented)
-		zapLogger.Errorf("unsupported metric type")
+		logger.Errorf("unsupported metric type")
 		return
 	}
 	if err != nil {
 		http.Error(w, fmt.Sprintf("metric is not found: %s", err), http.StatusNotFound)
-		zapLogger.Errorf("metric is not found: %s", err)
+		logger.Errorf("metric is not found: %s", err)
 		return
 	}
+
 	jsonBytes, err := json.Marshal(metric)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Internal server error: %s", err), http.StatusInternalServerError)
-		zapLogger.Errorf("cannot serialize metric to json: %s", err)
+		logger.Errorf("cannot serialize metric to json: %s", err)
 		return
 	}
+
 	w.Header().Set("Content-Type", "application/json")
 	_, err = w.Write(jsonBytes)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("can't write response: %s", err), http.StatusInternalServerError)
-		zapLogger.Errorf("cannot write response: %s", err)
+		logger.Fatalf("cannot write response: %s", err)
 	}
 }

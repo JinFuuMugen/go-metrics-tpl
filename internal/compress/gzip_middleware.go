@@ -11,26 +11,25 @@ import (
 )
 
 func GzipMiddleware(next http.Handler) http.Handler {
-	zapLogger := logger.GetLogger()
-	return logger.HandlerLogger(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	return logger.HandlerLogger(func(w http.ResponseWriter, r *http.Request) {
 		if strings.Contains(r.Header.Get("Content-Encoding"), "gzip") {
 			if strings.Contains(r.Header.Get("Content-Type"), "application/json") || strings.Contains(r.Header.Get("Content-Type"), "text/html") {
 				reader, err := gzip.NewReader(r.Body)
 				if err != nil {
-					zapLogger.Errorf("cannot create gzip reader: %s", err)
+					logger.Errorf("cannot create gzip reader: %s", err)
 					http.Error(w, fmt.Sprintf("internal server error: %s", err), http.StatusInternalServerError)
 					return
 				}
 				defer reader.Close()
 				decodedBody, err := io.ReadAll(reader)
 				if err != nil {
-					zapLogger.Errorf("cannot decode body: %s", err)
+					logger.Errorf("cannot decode body: %s", err)
 					http.Error(w, fmt.Sprintf("internal server error: %s", err), http.StatusInternalServerError)
 					return
 				}
 				r.Body = io.NopCloser(bytes.NewBuffer(decodedBody))
 			} else {
-				zapLogger.Errorf("invalid content type for gzip encoding")
+				logger.Errorf("invalid content type for gzip encoding")
 				http.Error(w, "invalid content type for gzip encoding", http.StatusBadRequest)
 				return
 			}
@@ -46,7 +45,7 @@ func GzipMiddleware(next http.Handler) http.Handler {
 		} else {
 			next.ServeHTTP(w, r)
 		}
-	}), zapLogger)
+	})
 }
 
 type gzipResponseWriter struct {

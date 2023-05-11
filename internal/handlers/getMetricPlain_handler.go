@@ -9,9 +9,6 @@ import (
 )
 
 func GetMetricPlainHandler(w http.ResponseWriter, r *http.Request) {
-
-	zapLogger := logger.GetLogger()
-
 	metricType := chi.URLParam(r, `metric_type`)
 	metricName := chi.URLParam(r, `metric_name`)
 
@@ -23,20 +20,20 @@ func GetMetricPlainHandler(w http.ResponseWriter, r *http.Request) {
 	case storage.MetricTypeCounter:
 		m, err = storage.GetCounter(metricName)
 	default:
-		zapLogger.Errorf("unsupported metric type")
+		logger.Errorf("unsupported metric type")
 		http.Error(w, "unsupported metric type", http.StatusNotImplemented)
 		return
 	}
 
 	if err != nil {
-		zapLogger.Errorf("metric is not found: %s", err)
+		logger.Errorf("metric is not found: %s", err)
 		http.Error(w, fmt.Sprintf("metric is not found: %s", err), http.StatusNotFound)
 		return
 	}
+
 	_, err = w.Write([]byte(m.GetValueString()))
 	if err != nil {
-		zapLogger.Errorf("cannot write response: %s", err)
-		http.Error(w, "internal server error", http.StatusInternalServerError)
+		logger.Fatalf("cannot write response: %s", err)
 	}
 	w.Header().Add("Content-Type", "text/plain")
 }

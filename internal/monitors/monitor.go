@@ -1,9 +1,9 @@
 package monitors
 
 import (
+	"fmt"
 	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/sender"
 	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/storage"
-	"log"
 	"math/rand"
 	"runtime"
 )
@@ -12,8 +12,6 @@ type monitor struct {
 	Storage   storage.Storage
 	Processor sender.Sender
 }
-
-const runtimeMetricsAmount = 27
 
 func NewMonitor(s storage.Storage, p sender.Sender) *monitor {
 	return &monitor{s, p}
@@ -54,7 +52,7 @@ func (m *monitor) collectRuntime() {
 
 func (m *monitor) collectSystem() {
 	m.Storage.SetGauge("RandomValue", 1000*rand.Float64())
-	m.Storage.AddCounter("PollCount", runtimeMetricsAmount)
+	m.Storage.AddCounter("PollCount", 1)
 }
 
 func (m *monitor) CollectMetrics() {
@@ -62,17 +60,18 @@ func (m *monitor) CollectMetrics() {
 	m.collectSystem()
 }
 
-func (m *monitor) Dump() {
+func (m *monitor) Dump() error {
 	for _, c := range m.Storage.GetCounters() {
 		err := m.Processor.Process(c)
 		if err != nil {
-			log.Printf("error dumping metric: %s", err)
+			return fmt.Errorf("error dumping metric: %w", err)
 		}
 	}
 	for _, g := range m.Storage.GetGauges() {
 		err := m.Processor.Process(g)
 		if err != nil {
-			log.Printf("error dumping metric: %s", err)
+			fmt.Errorf("error dumping metric: %w", err)
 		}
 	}
+	return nil
 }

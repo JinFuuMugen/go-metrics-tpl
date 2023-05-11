@@ -12,14 +12,13 @@ import (
 )
 
 func main() {
-	if err := logger.Init(); err != nil {
-		log.Fatalf("cannot create logger: %s", err)
-	}
-	zapLogger := logger.GetLogger()
-
 	cfg, err := config.LoadServerConfig()
 	if err != nil {
-		zapLogger.Fatalf("cannot create config: %s", err)
+		log.Fatalf("cannot create config: %s", err)
+	}
+
+	if err := logger.Init(); err != nil {
+		log.Fatalf("cannot create logger: %s", err)
 	}
 
 	fileio.Run(cfg)
@@ -38,6 +37,6 @@ func main() {
 	rout.Get("/value/{metric_type}/{metric_name}", handlers.GetMetricPlainHandler)
 
 	if err = http.ListenAndServe(cfg.Addr, compress.GzipMiddleware(rout)); err != nil {
-		zapLogger.Fatalf("cannot start server: %s", err)
+		logger.Fatalf("cannot start server: %s", err)
 	}
 }

@@ -14,7 +14,7 @@ import (
 	"time"
 )
 
-func SaveMetrics(filepath string, counters []storage.Counter, gauges []storage.Gauge) error {
+func saveMetrics(filepath string, counters []storage.Counter, gauges []storage.Gauge) error {
 	var metrics []models.Metrics
 
 	for _, c := range counters {
@@ -36,7 +36,7 @@ func SaveMetrics(filepath string, counters []storage.Counter, gauges []storage.G
 		})
 	}
 
-	jsonData, err := json.Marshal(metrics)
+	jsonData, err := json.MarshalIndent(metrics, "", "\t")
 	if err != nil {
 		return fmt.Errorf("cannot serialize metric to json: %w", err)
 	}
@@ -58,7 +58,7 @@ func SaveMetrics(filepath string, counters []storage.Counter, gauges []storage.G
 	return nil
 }
 
-func LoadMetrics(filepath string) error {
+func loadMetrics(filepath string) error {
 	var metrics []models.Metrics
 
 	file, err := os.OpenFile(filepath, os.O_RDONLY|os.O_CREATE, 0666)
@@ -91,13 +91,12 @@ func LoadMetrics(filepath string) error {
 }
 
 func Run(cfg *config.ServerConfig) {
-	zapLogger := logger.GetLogger()
 	if cfg.FileStoragePath != "" {
 
 		if cfg.Restore {
-			err := LoadMetrics(cfg.FileStoragePath)
+			err := loadMetrics(cfg.FileStoragePath)
 			if err != nil {
-				zapLogger.Fatalf("cannot read metrics: %s", err)
+				logger.Fatalf("cannot read metrics: %s", err)
 			}
 		}
 
@@ -108,12 +107,11 @@ func Run(cfg *config.ServerConfig) {
 }
 
 func runDumper(cfg *config.ServerConfig) {
-	zapLogger := logger.GetLogger()
 	storeTicker := time.NewTicker(time.Duration(cfg.StoreInterval) * time.Second)
 	for range storeTicker.C {
-		err := SaveMetrics(cfg.FileStoragePath, storage.GetCounters(), storage.GetGauges())
+		err := saveMetrics(cfg.FileStoragePath, storage.GetCounters(), storage.GetGauges())
 		if err != nil {
-			zapLogger.Fatalf("cannot save metrics: %s", err)
+			logger.Fatalf("cannot save metrics: %s", err)
 		}
 	}
 }
@@ -121,14 +119,15 @@ func runDumper(cfg *config.ServerConfig) {
 func GetDumperMiddleware(cfg *config.ServerConfig) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			zapLogger := logger.GetLogger()
-			if cfg.StoreInterval > 1 {
-				err := SaveMetrics(cfg.FileStoragePath, storage.GetCounters(), storage.GetGauges())
+
+			next.ServeHTTP(w, r)
+
+			if cfg.StoreInterval <= 0 {
+				err := saveMetrics(cfg.FileStoragePath, storage.GetCounters(), storage.GetGauges())
 				if err != nil {
-					zapLogger.Fatalf("cannot write metrics: %w", err)
+					logger.Fatalf("cannot write metrics: %w", err)
 				}
 			}
-			next.ServeHTTP(w, r)
 		})
 	}
 }

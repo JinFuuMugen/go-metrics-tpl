@@ -21,7 +21,7 @@ func TestSaveMetrics(t *testing.T) {
 
 	filepath := `test_metrics.json`
 
-	err := SaveMetrics(filepath, counters, gauges)
+	err := saveMetrics(filepath, counters, gauges)
 	if err != nil {
 		t.Fatalf("SaveMetrics failed with error: %v", err)
 	}

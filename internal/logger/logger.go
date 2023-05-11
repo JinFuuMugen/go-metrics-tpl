@@ -20,11 +20,19 @@ func Init() error {
 	return nil
 }
 
-func GetLogger() zap.SugaredLogger {
-	return log
+func Warnf(template string, args ...any) {
+	log.Warnf(template, args...)
 }
 
-func HandlerLogger(h http.HandlerFunc, log zap.SugaredLogger) http.HandlerFunc {
+func Fatalf(template string, args ...any) {
+	log.Fatalf(template, args)
+}
+
+func Errorf(template string, args ...any) {
+	log.Errorf(template, args)
+}
+
+func HandlerLogger(h http.HandlerFunc) http.HandlerFunc {
 	logFn := func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 		uri := r.RequestURI
