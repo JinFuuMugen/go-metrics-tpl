@@ -90,20 +90,20 @@ func loadMetrics(filepath string) error {
 	return nil
 }
 
-func Run(cfg *config.ServerConfig) {
+func Run(cfg *config.ServerConfig) error {
 	if cfg.FileStoragePath != "" {
 
 		if cfg.Restore {
 			err := loadMetrics(cfg.FileStoragePath)
 			if err != nil {
-				logger.Fatalf("cannot read metrics: %s", err)
+				return fmt.Errorf("cannot read metrics: %w", err)
 			}
 		}
-
 	}
 	if cfg.StoreInterval > 0 {
 		go runDumper(cfg)
 	}
+	return nil
 }
 
 func runDumper(cfg *config.ServerConfig) {

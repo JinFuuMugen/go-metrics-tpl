@@ -12,7 +12,7 @@ var log zap.SugaredLogger
 func Init() error {
 	logger, err := zap.NewDevelopment()
 	if err != nil {
-		return fmt.Errorf("can't initialize zap logger: %w", err)
+		return fmt.Errorf("cannot initialize zap logger: %w", err)
 	}
 	defer logger.Sync()
 	sug := *logger.Sugar()

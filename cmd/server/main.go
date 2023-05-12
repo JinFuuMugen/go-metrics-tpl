@@ -21,7 +21,9 @@ func main() {
 		log.Fatalf("cannot create logger: %s", err)
 	}
 
-	fileio.Run(cfg)
+	if err := fileio.Run(cfg); err != nil {
+		logger.Fatalf("cannot load preload metrics: %s", err)
+	}
 
 	rout := chi.NewRouter()
 
