@@ -23,3 +23,6 @@ vendor/
 # IDEs directories
 .idea
 .vscode
+
+# Preloaded files
+internal/fileio/test_metrics.json

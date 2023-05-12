@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/logger"
 	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
 	"net/http"
@@ -16,23 +17,23 @@ func TestMainHandle(t *testing.T) {
 		wantedCode int
 	}{
 		{
-			name:       `wrong method`,
+			name:       "wrong method",
 			wantedCode: 405,
 			method:     http.MethodPost,
-			url:        `/`,
+			url:        "/",
 		},
 		{
-			name:       `wrong url`,
+			name:       "wrong url",
 			wantedCode: 404,
 			method:     http.MethodGet,
-			url:        `/123/`,
+			url:        "/123/",
 		},
 	}
-
+	logger.Init()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			r := chi.NewRouter()
-			r.Get(`/`, MainHandler)
+			r.Get("/", MainHandler)
 			req, err := http.NewRequest(tt.method, tt.url, nil)
 			if err != nil {
 				t.Fatal(err)

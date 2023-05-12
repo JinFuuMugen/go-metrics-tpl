@@ -6,14 +6,17 @@ import (
 	"strings"
 )
 
-const MetricTypeGauge = `gauge`
-const MetricTypeCounter = `counter`
+const MetricTypeGauge = "gauge"
+const MetricTypeCounter = "counter"
 
 type (
 	Metric interface {
 		GetType() string
 		GetName() string
 		GetValueString() string
+
+		//TODO FIXME
+		GetValue() interface{}
 	}
 
 	Storage interface {
@@ -45,6 +48,10 @@ func (c Counter) GetName() string {
 	return c.Name
 }
 
+func (c Counter) GetValue() interface{} {
+	return c.Value
+}
+
 func (c Counter) GetValueString() string {
 	return strconv.FormatInt(c.Value, 10)
 }
@@ -55,6 +62,10 @@ func (g Gauge) GetType() string {
 
 func (g Gauge) GetName() string {
 	return g.Name
+}
+
+func (g Gauge) GetValue() interface{} {
+	return g.Value
 }
 
 func (g Gauge) GetValueString() string {
@@ -82,22 +93,12 @@ func GetGauge(k string) (Gauge, error) {
 	return defaultStorage.GetGauge(k)
 }
 
-func AddCounter(k, v string) error {
-	value, err := strconv.ParseInt(v, 10, 64)
-	if err != nil {
-		return fmt.Errorf(`cannot parse counter value: %w`, err)
-	}
-	defaultStorage.AddCounter(k, value)
-	return nil
+func AddCounter(k string, v int64) {
+	defaultStorage.AddCounter(k, v)
 }
 
-func SetGauge(k, v string) error {
-	value, err := strconv.ParseFloat(v, 64)
-	if err != nil {
-		return fmt.Errorf(`cannot parse gauge value: %w`, err)
-	}
-	defaultStorage.SetGauge(k, value)
-	return nil
+func SetGauge(k string, v float64) {
+	defaultStorage.SetGauge(k, v)
 }
 func GetCounters() []Counter {
 	return defaultStorage.GetCounters()

@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/config"
+	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/logger"
 	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/monitors"
 	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/sender"
 	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/storage"
@@ -11,8 +12,14 @@ import (
 func main() {
 	cfg, err := config.New()
 	if err != nil {
-		log.Fatalf(`cannot create config: %s`, err)
+		log.Fatalf("cannot create config: %s", err)
 	}
+
+	err = logger.Init()
+	if err != nil {
+		log.Fatalf("cannot initialize logger: %s", err)
+	}
+
 	pollTicker := cfg.PollTicker()
 	reportTicker := cfg.ReportTicker()
 
@@ -22,7 +29,10 @@ func main() {
 		case <-pollTicker.C:
 			m.CollectMetrics()
 		case <-reportTicker.C:
-			m.Dump()
+			err := m.Dump()
+			if err != nil {
+				logger.Warnf("error dumping metrics: %w", err)
+			}
 		}
 	}
 }

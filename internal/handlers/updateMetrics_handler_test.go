@@ -1,70 +1,121 @@
 package handlers
 
 import (
+	"encoding/json"
+	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/logger"
+	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/models"
+	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/storage"
 	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 )
 
 func TestUpdateMetricsHandle(t *testing.T) {
+	testGauge := `{"id":"Some", "type":"gauge", "value":124.24}`
+	testCounter := `{"id":"Some", "type":"counter", "delta":124}`
+	testWrongMetric := `{"id":"Some", "type":"qwert", "delta":124}`
+	testWrongValue := `{"id":"Some", "type":"counter", "delta":124.123}`
+	testValue := 124.24
+	testDelta := int64(124)
+	testDoubleDelta := int64(124 * 2)
 
 	tests := []struct {
 		method     string
 		name       string
 		url        string
 		wantedCode int
+		body       string
+		wantedBody models.Metrics
 	}{
 		{
-			name:       `positive gauge post`,
+			name:       "positive gauge post",
 			wantedCode: 200,
 			method:     http.MethodPost,
-			url:        `/update/gauge/someValue/120.414`,
+			url:        "/update/",
+			body:       testGauge,
+			wantedBody: models.Metrics{
+				ID:    "Some",
+				MType: "gauge",
+				Delta: nil,
+				Value: &testValue,
+			},
 		},
 		{
-			name:       `positive counter post`,
+			name:       "positive counter post",
 			wantedCode: 200,
 			method:     http.MethodPost,
-			url:        `/update/counter/someValue/120`,
+			url:        "/update/",
+			body:       testCounter,
+			wantedBody: models.Metrics{
+				ID:    "Some",
+				MType: "counter",
+				Delta: &testDelta,
+				Value: nil,
+			},
 		},
 		{
-			name:       `wrong method`,
+			name:       "positive update existing counter post",
+			wantedCode: 200,
+			method:     http.MethodPost,
+			url:        "/update/",
+			body:       testCounter,
+			wantedBody: models.Metrics{
+				ID:    "Some",
+				MType: "counter",
+				Delta: &testDoubleDelta,
+				Value: nil,
+			},
+		},
+		{
+			name:       "wrong method",
 			wantedCode: 405,
 			method:     http.MethodGet,
-			url:        `/update/counter/someValue/120`,
+			url:        "/update/",
+			body:       "",
 		},
 		{
-			name:       `wrong url`,
+			name:       "wrong url",
 			wantedCode: 404,
 			method:     http.MethodPost,
-			url:        `/update`,
+			url:        "/updat",
 		},
 		{
-			name:       `wrong metric`,
+			name:       "wrong metric",
 			wantedCode: 501,
 			method:     http.MethodPost,
-			url:        `/update/metr/someValue/900.009`,
+			url:        "/update/",
+			body:       testWrongMetric,
 		},
 		{
-			name:       `bad metric value`,
+			name:       "bad metric value",
 			wantedCode: 400,
 			method:     http.MethodPost,
-			url:        `/update/counter/someValue/120.321`,
+			url:        "/update/",
+			body:       testWrongValue,
 		},
 	}
+	logger.Init()
+	storage.Reset()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			r := chi.NewRouter()
-			r.Post(`/update/{metric_type}/{metric_name}/{metric_value}`, UpdateMetricsHandler)
-
-			req, err := http.NewRequest(tt.method, tt.url, nil)
+			r.Post("/update/", UpdateMetricsHandler)
+			req, err := http.NewRequest(tt.method, tt.url, strings.NewReader(tt.body))
+			req.Header.Set("Content-Type", "application/json")
 			if err != nil {
 				t.Fatal(err)
 			}
 			rr := httptest.NewRecorder()
 			r.ServeHTTP(rr, req)
 			assert.Equal(t, tt.wantedCode, rr.Code)
+			if tt.wantedCode == 200 {
+				var data models.Metrics
+				json.Unmarshal(rr.Body.Bytes(), &data)
+				assert.Equal(t, tt.wantedBody, data)
+			}
 		})
 	}
 }

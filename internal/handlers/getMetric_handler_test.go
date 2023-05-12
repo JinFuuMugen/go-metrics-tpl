@@ -1,63 +1,89 @@
 package handlers
 
 import (
+	"encoding/json"
+	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/logger"
+	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/models"
 	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/storage"
 	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 )
 
 func TestGetMetricHandle(t *testing.T) {
+	testGauge := `{"id":"GetTestGauge", "type":"gauge"}`
+	testCounter := `{"id":"GetTestCounter", "type":"counter"}`
+	testWrongMetric := `{"id":"Some", "type":"qwert"}`
+	testValue := 123.123
+	testDelta := int64(123)
+
 	tests := []struct {
-		method      string
-		name        string
-		url         string
-		wantedCode  int
-		wantedValue string
+		method     string
+		name       string
+		url        string
+		wantedCode int
+		body       string
+		wantedBody models.Metrics
 	}{
 		{
-			name:        `positive gauge get`,
-			wantedCode:  200,
-			method:      http.MethodGet,
-			url:         `/value/gauge/someG`,
-			wantedValue: `123.123`,
-		},
-		{
-			name:        `positive counter get`,
-			wantedCode:  200,
-			method:      http.MethodGet,
-			url:         `/value/counter/someC`,
-			wantedValue: `123`,
-		},
-		{
-			name:       `wrong method`,
-			wantedCode: 405,
+			name:       "positive gauge get",
+			wantedCode: 200,
 			method:     http.MethodPost,
-			url:        `/value/counter/someValue`,
+			url:        "/value/",
+			body:       testGauge,
+			wantedBody: models.Metrics{
+				ID:    "GetTestGauge",
+				MType: "gauge",
+				Delta: nil,
+				Value: &testValue,
+			},
 		},
 		{
-			name:       `wrong url`,
+			name:       "positive counter get",
+			wantedCode: 200,
+			method:     http.MethodPost,
+			url:        "/value/",
+			body:       testCounter,
+			wantedBody: models.Metrics{
+				ID:    "GetTestCounter",
+				MType: "counter",
+				Delta: &testDelta,
+				Value: nil,
+			},
+		},
+		{
+			name:       "wrong method",
+			wantedCode: 405,
+			method:     http.MethodGet,
+			url:        "/value/",
+			body:       testGauge,
+		},
+		{
+			name:       "wrong url",
 			wantedCode: 404,
-			method:     http.MethodGet,
-			url:        `/updat/gauge/some`,
+			method:     http.MethodPost,
+			url:        "/valu/",
+			body:       testGauge,
 		},
 		{
-			name:       `wrong metric`,
+			name:       "wrong metric",
 			wantedCode: 501,
-			method:     http.MethodGet,
-			url:        `/value/metr/someValue`,
+			method:     http.MethodPost,
+			url:        "/value/",
+			body:       testWrongMetric,
 		},
 	}
-
-	storage.SetGauge(`someG`, `123.123`)
-	storage.AddCounter(`someC`, `123`)
+	logger.Init()
+	storage.SetGauge("GetTestGauge", testValue)
+	storage.AddCounter("GetTestCounter", testDelta)
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			r := chi.NewRouter()
-			r.Get(`/value/{metric_type}/{metric_name}`, GetMetricHandler)
-			req, err := http.NewRequest(tt.method, tt.url, nil)
+			r.Post("/value/", GetMetricHandler)
+			req, err := http.NewRequest(tt.method, tt.url, strings.NewReader(tt.body))
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -65,7 +91,9 @@ func TestGetMetricHandle(t *testing.T) {
 			r.ServeHTTP(rr, req)
 			assert.Equal(t, tt.wantedCode, rr.Code)
 			if tt.wantedCode == 200 {
-				assert.Equal(t, tt.wantedValue, rr.Body.String())
+				var data models.Metrics
+				json.Unmarshal(rr.Body.Bytes(), &data)
+				assert.Equal(t, tt.wantedBody, data)
 			}
 		})
 	}
