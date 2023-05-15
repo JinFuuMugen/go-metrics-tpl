@@ -37,7 +37,7 @@ func LoadServerConfig() (*ServerConfig, error) {
 
 	if envStoreInterval := os.Getenv("STORE_INTERVAL"); envStoreInterval != "" {
 		_, err := strconv.Atoi(envStoreInterval)
-		if err != nil {
+		if err == nil {
 			envStoreInterval = envStoreInterval + "s"
 		}
 		storeInterval, err := time.ParseDuration(envStoreInterval)
