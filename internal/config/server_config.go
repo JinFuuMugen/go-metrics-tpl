@@ -12,6 +12,7 @@ type ServerConfig struct {
 	StoreInterval   int    `env:"STORE_INTERVAL"`
 	FileStoragePath string `env:"FILE_STORAGE_PATH"`
 	Restore         bool   `env:"RESTORE"`
+	DatabaseDSN     string `env:"DATABASE_DSN"`
 }
 
 func LoadServerConfig() (*ServerConfig, error) {
@@ -25,6 +26,7 @@ func LoadServerConfig() (*ServerConfig, error) {
 	flag.IntVar(&cfg.StoreInterval, "i", cfg.StoreInterval, "metrics store interval(0 to sync)")
 	flag.StringVar(&cfg.FileStoragePath, "f", cfg.FileStoragePath, "path of storage file")
 	flag.BoolVar(&cfg.Restore, "r", cfg.Restore, "boolean to load/not saved values")
+	flag.StringVar(&cfg.DatabaseDSN, "d", cfg.DatabaseDSN, "database DSN")
 	flag.Parse()
 	if envAddr := os.Getenv("ADDRESS"); envAddr != "" {
 		cfg.Addr = envAddr
