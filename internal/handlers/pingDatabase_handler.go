@@ -21,8 +21,10 @@ func PingDBHandler(cfg *config.ServerConfig) http.HandlerFunc {
 			return
 		}
 		defer db.Close()
+
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
+
 		if err = db.PingContext(ctx); err != nil {
 			logger.Errorf("error pinging database: %s", err)
 			http.Error(w, "error pinging database", http.StatusInternalServerError)

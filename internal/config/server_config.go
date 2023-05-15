@@ -48,5 +48,8 @@ func LoadServerConfig() (*ServerConfig, error) {
 		}
 		cfg.Restore = restore
 	}
+	if envDatabaseDSN := os.Getenv("DATABASE_DSN"); envDatabaseDSN != "" {
+		cfg.DatabaseDSN = envDatabaseDSN
+	}
 	return cfg, nil
 }
