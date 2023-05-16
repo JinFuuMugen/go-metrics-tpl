@@ -9,8 +9,8 @@ import (
 )
 
 func GetMetricPlainHandler(w http.ResponseWriter, r *http.Request) {
-	metricType := chi.URLParam(r, `metric_type`)
-	metricName := chi.URLParam(r, `metric_name`)
+	metricType := chi.URLParam(r, "metric_type")
+	metricName := chi.URLParam(r, "metric_name")
 
 	var m storage.Metric
 	var err error

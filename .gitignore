@@ -25,4 +25,4 @@ vendor/
 .vscode
 
 # Preloaded files
-
+internal/fileio/test_metrics.json

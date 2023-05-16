@@ -15,16 +15,16 @@ func UpdateMetricsHandler(w http.ResponseWriter, r *http.Request) {
 	var buf bytes.Buffer
 	_, err := buf.ReadFrom(r.Body)
 	if err != nil {
-		logger.Errorf("can't read request body: %s", err)
-		http.Error(w, fmt.Sprintf("can't read request body: %s", err), http.StatusBadRequest)
+		logger.Errorf("cannot read request body: %s", err)
+		http.Error(w, fmt.Sprintf("cannot read request body: %s", err), http.StatusBadRequest)
 		return
 	}
 
 	var metric models.Metrics
 	err = json.Unmarshal(buf.Bytes(), &metric)
 	if err != nil {
-		logger.Errorf("can't process body: %s", err)
-		http.Error(w, fmt.Sprintf("can't process body: %s", err), http.StatusBadRequest)
+		logger.Errorf("cannot process body: %s", err)
+		http.Error(w, fmt.Sprintf("cannot process body: %s", err), http.StatusBadRequest)
 		return
 	}
 
@@ -43,7 +43,7 @@ func UpdateMetricsHandler(w http.ResponseWriter, r *http.Request) {
 	case storage.MetricTypeGauge:
 		value, err := metric.GetValue()
 		if err != nil {
-			logger.Errorf("can't get value: %s", err)
+			logger.Errorf("cannot get value: %s", err)
 			http.Error(w, fmt.Sprintf("bad request: %s", err), http.StatusBadRequest)
 			return
 		}
@@ -56,7 +56,7 @@ func UpdateMetricsHandler(w http.ResponseWriter, r *http.Request) {
 
 	jsonBytes, err := json.Marshal(metric)
 	if err != nil {
-		logger.Errorf("can't serialize metric to json: %s", err)
+		logger.Errorf("cannot serialize metric to json: %s", err)
 		http.Error(w, fmt.Sprintf("internal server error: %s", err), http.StatusInternalServerError)
 		return
 	}
@@ -64,6 +64,6 @@ func UpdateMetricsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	_, err = w.Write(jsonBytes)
 	if err != nil {
-		logger.Fatalf("can't write response: %s", err)
+		logger.Fatalf("cannot write response: %s", err)
 	}
 }

@@ -22,12 +22,14 @@ func Run(cfg *config.ServerConfig) {
 				if err != nil {
 					logger.Fatalf("cannot read metrics from db: %s", err)
 				}
+
 			}
 		}
 	}
 	if cfg.StoreInterval > 0 {
 		go runDumper(cfg)
 	}
+	return nil
 }
 
 func runDumper(cfg *config.ServerConfig) {
