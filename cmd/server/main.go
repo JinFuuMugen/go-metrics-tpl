@@ -31,6 +31,7 @@ func main() {
 
 	fileio.Run(cfg)
 
+
 	rout := chi.NewRouter()
 
 	rout.Get("/", handlers.MainHandler)
