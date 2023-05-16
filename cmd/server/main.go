@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/compress"
 	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/config"
+	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/database"
 	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/fileio"
 	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/handlers"
 	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/logger"
@@ -21,13 +22,20 @@ func main() {
 		log.Fatalf("cannot create logger: %s", err)
 	}
 
+	if cfg.DatabaseDSN != "" {
+		err := database.InitDatabase(cfg.DatabaseDSN)
+		if err != nil {
+			log.Fatalf("cannot create database connection: %s", err)
+		}
+	}
+
 	fileio.Run(cfg)
 
 	rout := chi.NewRouter()
 
 	rout.Get("/", handlers.MainHandler)
 
-	rout.Get("/ping", handlers.PingDBHandler(cfg))
+	rout.Get("/ping", handlers.PingDBHandler())
 
 	rout.Route("/update", func(r chi.Router) {
 		r.Use(fileio.GetDumperMiddleware(cfg))
