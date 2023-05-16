@@ -29,8 +29,9 @@ func main() {
 		}
 	}
 
-	fileio.Run(cfg)
-
+	if err := fileio.Run(cfg); err != nil {
+		logger.Fatalf("cannot load preload metrics: %s", err)
+	}
 
 	rout := chi.NewRouter()
 

@@ -1,6 +1,7 @@
 package fileio
 
 import (
+	"fmt"
 	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/config"
 	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/logger"
 	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/storage"
@@ -8,21 +9,20 @@ import (
 	"time"
 )
 
-func Run(cfg *config.ServerConfig) {
+func Run(cfg *config.ServerConfig) error {
 	if cfg.FileStoragePath != "" {
 
 		if cfg.Restore {
 			if cfg.DatabaseDSN == "" {
 				err := loadMetricsFile(cfg.FileStoragePath)
 				if err != nil {
-					logger.Fatalf("cannot read metrics from file: %s", err)
+					return fmt.Errorf("cannot read metrics from file: %w", err)
 				}
 			} else {
 				err := loadMetricsDB()
 				if err != nil {
-					logger.Fatalf("cannot read metrics from db: %s", err)
+					return fmt.Errorf("cannot read metrics from database: %w", err)
 				}
-
 			}
 		}
 	}
