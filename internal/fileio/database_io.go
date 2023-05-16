@@ -35,6 +35,9 @@ func loadMetricsDB() error {
 	if err != nil {
 		return fmt.Errorf("cannot read metrics from db: %w", err)
 	}
+	if rows.Err() != nil {
+		return fmt.Errorf("cannot read metrics from db: %w", rows.Err())
+	}
 	defer rows.Close()
 
 	for rows.Next() {
