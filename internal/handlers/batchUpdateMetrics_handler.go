@@ -7,7 +7,6 @@ import (
 	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/logger"
 	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/models"
 	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/storage"
-	"log"
 	"net/http"
 )
 
@@ -20,8 +19,6 @@ func UpdateBatchMetricsHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("cannot read request body: %s", err), http.StatusBadRequest)
 		return
 	}
-
-	log.Printf(buf.String())
 
 	var metrics []models.Metrics
 	err = json.Unmarshal(buf.Bytes(), &metrics)
