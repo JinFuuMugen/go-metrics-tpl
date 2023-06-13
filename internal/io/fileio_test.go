@@ -1,4 +1,4 @@
-package loadsavemanager
+package io
 
 import (
 	"encoding/json"

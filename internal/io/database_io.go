@@ -1,4 +1,4 @@
-package loadsavemanager
+package io
 
 import (
 	"database/sql"
@@ -13,14 +13,14 @@ import (
 
 func saveMetricsDB(counters []storage.Counter, gauges []storage.Gauge) error {
 	for _, c := range counters {
-		_, err := database.DB.Exec("INSERT INTO metrics (type, value, delta, name) VALUES ($1, $2, $3, $4) ON CONFLICT (type, name) DO UPDATE SET value = $2, delta = $3;", c.Type, sql.NullFloat64{Valid: false, Float64: 0}, c.Value, c.Name)
+		_, err := database.DB.Exec("INSERT INTO metrics (type, value, delta, id) VALUES ($1, $2, $3, $4) ON CONFLICT (type, id) DO UPDATE SET value = $2, delta = $3;", c.Type, sql.NullFloat64{Valid: false, Float64: 0}, c.Value, c.Name)
 		if err != nil {
 			return fmt.Errorf("cannot execute query to save counters: %w", err)
 		}
 	}
 
 	for _, g := range gauges {
-		_, err := database.DB.Exec("INSERT INTO metrics (type, value, delta, name) VALUES ($1, $2, $3, $4) ON CONFLICT (type, name) DO UPDATE SET value = $2, delta = $3;", g.Type, g.Value, sql.NullInt64{Valid: false, Int64: 0}, g.Name)
+		_, err := database.DB.Exec("INSERT INTO metrics (type, value, delta, id) VALUES ($1, $2, $3, $4) ON CONFLICT (type, id) DO UPDATE SET value = $2, delta = $3;", g.Type, g.Value, sql.NullInt64{Valid: false, Int64: 0}, g.Name)
 		if err != nil {
 			return fmt.Errorf("cannot execute query to save gauges: %w", err)
 		}
