@@ -1,4 +1,4 @@
-package io
+package loadsavemanager
 
 import (
 	"database/sql"
@@ -9,22 +9,34 @@ import (
 	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/storage"
 	_ "github.com/jackc/pgx/v5"
 	_ "github.com/jackc/pgx/v5/stdlib"
+	"strings"
 )
 
 func saveMetricsDB(counters []storage.Counter, gauges []storage.Gauge) error {
-	for _, c := range counters {
-		_, err := database.DB.Exec("INSERT INTO metrics (type, value, delta, id) VALUES ($1, $2, $3, $4) ON CONFLICT (type, id) DO UPDATE SET value = $2, delta = $3;", c.Type, sql.NullFloat64{Valid: false, Float64: 0}, c.Value, c.Name)
-		if err != nil {
-			return fmt.Errorf("cannot execute query to save counters: %w", err)
-		}
+	counterValues := make([]string, len(counters))
+	counterParams := make([]interface{}, 0, len(counters)*4)
+
+	for i, c := range counters {
+		counterValues[i] = fmt.Sprintf("($%d, $%d, $%d, $%d)", i*4+1, i*4+2, i*4+3, i*4+4)
+		counterParams = append(counterParams, c.Type, sql.NullFloat64{Valid: false, Float64: 0}, c.Value, c.Name)
 	}
 
-	for _, g := range gauges {
-		_, err := database.DB.Exec("INSERT INTO metrics (type, value, delta, id) VALUES ($1, $2, $3, $4) ON CONFLICT (type, id) DO UPDATE SET value = $2, delta = $3;", g.Type, g.Value, sql.NullInt64{Valid: false, Int64: 0}, g.Name)
-		if err != nil {
-			return fmt.Errorf("cannot execute query to save gauges: %w", err)
-		}
+	gaugeValues := make([]string, len(gauges))
+	gaugeParams := make([]interface{}, 0, len(gauges)*4)
+
+	for i, g := range gauges {
+		gaugeValues[i] = fmt.Sprintf("($%d, $%d, $%d, $%d)", (i+len(counters))*4+1, (i+len(counters))*4+2, (i+len(counters))*4+3, (i+len(counters))*4+4)
+		gaugeParams = append(gaugeParams, g.Type, g.Value, sql.NullInt64{Valid: false, Int64: 0}, g.Name)
 	}
+
+	query := fmt.Sprintf("INSERT INTO metrics (type, value, delta, name) VALUES %s ON CONFLICT (type, name) DO UPDATE SET value = excluded.value, delta = excluded.delta;", strings.Join(append(counterValues, gaugeValues...), ", "))
+	params := append(counterParams, gaugeParams...)
+
+	_, err := database.DB.Exec(query, params...)
+	if err != nil {
+		return fmt.Errorf("cannot execute query to save metrics: %w", err)
+	}
+
 	return nil
 }
 
