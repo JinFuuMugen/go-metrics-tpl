@@ -39,6 +39,11 @@ func main() {
 
 	rout.Get("/ping", handlers.PingDBHandler())
 
+	rout.Route("/updates", func(r chi.Router) {
+		r.Use(io.GetDumperMiddleware(cfg))
+		r.Post("/", handlers.UpdateBatchMetricsHandler)
+	})
+
 	rout.Route("/update", func(r chi.Router) {
 		r.Use(io.GetDumperMiddleware(cfg))
 		r.Post("/", handlers.UpdateMetricsHandler)
