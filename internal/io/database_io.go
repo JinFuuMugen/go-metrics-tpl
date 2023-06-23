@@ -15,7 +15,7 @@ func saveMetricsDB(counters []storage.Counter, gauges []storage.Gauge) error {
 	counterStmt, err := database.DB.Prepare(`
 		INSERT INTO metrics (type, value, delta, id)
 		VALUES ($1, $2, $3, $4)
-		ON CONFLICT (type, id) DO UPDATE SET value = $2, delta = $3;
+		ON CONFLICT (type, name DO UPDATE SET value = $2, delta = $3;
 	`)
 	if err != nil {
 		return fmt.Errorf("cannot prepare counter statement: %w", err)
@@ -25,7 +25,7 @@ func saveMetricsDB(counters []storage.Counter, gauges []storage.Gauge) error {
 	gaugeStmt, err := database.DB.Prepare(`
 		INSERT INTO metrics (type, value, delta, id)
 		VALUES ($1, $2, $3, $4)
-		ON CONFLICT (type, id) DO UPDATE SET value = $2, delta = $3;
+		ON CONFLICT (type, name) DO UPDATE SET value = $2, delta = $3;
 	`)
 	if err != nil {
 		return fmt.Errorf("cannot prepare gauge statement: %w", err)
