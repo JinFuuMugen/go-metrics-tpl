@@ -13,7 +13,7 @@ import (
 
 func saveMetricsDB(counters []storage.Counter, gauges []storage.Gauge) error {
 	counterStmt, err := database.DB.Prepare(`
-		INSERT INTO metrics (type, value, delta, id)
+		INSERT INTO metrics (type, value, delta, name)
 		VALUES ($1, $2, $3, $4)
 		ON CONFLICT (type, name) DO UPDATE SET value = $2, delta = $3;
 	`)
@@ -23,7 +23,7 @@ func saveMetricsDB(counters []storage.Counter, gauges []storage.Gauge) error {
 	defer counterStmt.Close()
 
 	gaugeStmt, err := database.DB.Prepare(`
-		INSERT INTO metrics (type, value, delta, id)
+		INSERT INTO metrics (type, value, delta, name)
 		VALUES ($1, $2, $3, $4)
 		ON CONFLICT (type, name) DO UPDATE SET value = $2, delta = $3;
 	`)
