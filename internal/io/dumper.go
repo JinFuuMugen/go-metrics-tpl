@@ -1,4 +1,4 @@
-package loadsavemanager
+package io
 
 import (
 	"fmt"
@@ -46,6 +46,7 @@ func runDumper(cfg *config.ServerConfig) {
 				logger.Fatalf("cannot save metrics into file: %s", err)
 			}
 		}
+
 	}
 }
 
