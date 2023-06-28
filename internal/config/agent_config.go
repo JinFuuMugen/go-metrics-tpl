@@ -11,6 +11,7 @@ type Config struct {
 	Addr           string `env:"ADDRESS"`
 	PollInterval   int    `env:"POLL_INTERVAL"`
 	ReportInterval int    `env:"REPORT_INTERVAL"`
+	Key            string `env:"KEY"`
 }
 
 func New() (*Config, error) {
@@ -18,6 +19,7 @@ func New() (*Config, error) {
 	flag.StringVar(&cfg.Addr, `a`, cfg.Addr, `server address`)
 	flag.IntVar(&cfg.PollInterval, `p`, cfg.PollInterval, `poll interval`)
 	flag.IntVar(&cfg.ReportInterval, `r`, cfg.ReportInterval, `poll interval`)
+	flag.StringVar(&cfg.Key, `k`, cfg.Key, `SHA256 key`)
 	flag.Parse()
 
 	if err := env.Parse(cfg); err != nil {
@@ -35,6 +37,7 @@ func New() (*Config, error) {
 	if cfg.ReportInterval == 0 {
 		cfg.ReportInterval = 10
 	}
+
 	return cfg, nil
 }
 
