@@ -8,12 +8,12 @@ import (
 	"runtime"
 )
 
-type monitor struct {
+type runtimeMonitor struct {
 	Storage   storage.Storage
 	Processor sender.Sender
 }
 
-func NewMonitor(s storage.Storage, p sender.Sender) *monitor {
+func NewRuntimeMonitor(s storage.Storage, p sender.Sender) *monitor {
 	return &monitor{s, p}
 }
 
@@ -50,17 +50,17 @@ func (m *monitor) collectRuntime() {
 	m.Storage.SetGauge("TotalAlloc", float64(rtm.TotalAlloc))     //uint64s
 }
 
-func (m *monitor) collectSystem() {
+func (m *monitor) collectRuntimeSystem() {
 	m.Storage.SetGauge("RandomValue", 1000*rand.Float64())
 	m.Storage.AddCounter("PollCount", 1)
 }
 
-func (m *monitor) CollectMetrics() {
+func (m *monitor) CollectRuntimeMetrics() {
 	m.collectRuntime()
-	m.collectSystem()
+	m.collectRuntimeSystem()
 }
 
-func (m *monitor) Dump() error {
+func (m *monitor) DumpRuntime() error {
 	c := m.Storage.GetCounters()
 	g := m.Storage.GetGauges()
 	err := m.Processor.Process(c, g)

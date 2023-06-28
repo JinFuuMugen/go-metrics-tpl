@@ -23,15 +23,36 @@ func main() {
 	pollTicker := cfg.PollTicker()
 	reportTicker := cfg.ReportTicker()
 
-	m := monitors.NewMonitor(storage.NewStorage(), sender.NewSender(*cfg))
+	str := storage.NewStorage()
+	snd := sender.NewSender(*cfg)
+
+	m := monitors.NewRuntimeMonitor(str, snd)
+	g := monitors.NewGopsutilMonitor(str, snd)
+
+	semaphore := make(chan bool, cfg.RateLimit)
+
 	for {
 		select {
 		case <-pollTicker.C:
-			m.CollectMetrics()
+			m.CollectRuntimeMetrics()
+			g.CollectGopsutil()
+
 		case <-reportTicker.C:
-			err := m.Dump()
-			if err != nil {
-				logger.Warnf("error dumping metrics: %w", err)
+			select {
+			case semaphore <- true:
+				go func() {
+					err := m.Dump()
+					if err != nil {
+						logger.Warnf("error dumping metrics: %w", err)
+					}
+					err = g.Dump()
+					if err != nil {
+						logger.Warnf("error dumping metrics: %w", err)
+					}
+					<-semaphore
+				}()
+			default:
+				logger.Warnf("maximum concurrent Dump executions reached, skipping current dump")
 			}
 		}
 	}
