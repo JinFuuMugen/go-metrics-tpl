@@ -1,8 +1,10 @@
 package cryptography
 
 import (
+	"bytes"
 	"encoding/hex"
 	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/config"
+	"io"
 	"net/http"
 )
 
@@ -12,15 +14,23 @@ func ValidateHashMiddleware(cfg *config.ServerConfig) func(next http.Handler) ht
 
 			hashString := r.Header.Get("HashSHA256")
 			if hashString != "" {
-				body := r.Method + r.URL.Path + r.Host
+				body, err := io.ReadAll(r.Body)
+				if err != nil {
+					http.Error(w, "cannot read body", http.StatusBadRequest)
+				}
+				defer r.Body.Close()
 
-				hash := GetHMACSHA256([]byte(body), cfg.Key)
+				newBody := io.NopCloser(bytes.NewReader(body))
+
+				hash := GetHMACSHA256(body, cfg.Key)
 				calculatedHashString := hex.EncodeToString(hash)
 
 				if hashString != calculatedHashString {
-					http.Error(w, "Несоответствие хэша", http.StatusBadRequest)
+					http.Error(w, "hash differs", http.StatusBadRequest)
 					return
 				}
+
+				r.Body = newBody
 			}
 
 			next.ServeHTTP(w, r)
