@@ -13,11 +13,34 @@ type runtimeMonitor struct {
 	Processor sender.Sender
 }
 
-func NewRuntimeMonitor(s storage.Storage, p sender.Sender) *monitor {
-	return &monitor{s, p}
+func NewRuntimeMonitor(s storage.Storage, p sender.Sender) RuntimeMonitor {
+	return &runtimeMonitor{Storage: s, Processor: p}
 }
 
-func (m *monitor) collectRuntime() {
+func (m *runtimeMonitor) Collect() {
+	m.CollectRuntimeMetrics()
+}
+
+func (m *runtimeMonitor) CollectRuntimeMetrics() {
+	m.collectRuntime()
+	m.collectRuntimeSystem()
+}
+
+func (m *runtimeMonitor) Dump() error {
+	c := m.Storage.GetCounters()
+	g := m.Storage.GetGauges()
+	err := m.Processor.Process(c, g)
+	if err != nil {
+		return fmt.Errorf("error dumping metric: %w", err)
+	}
+	return nil
+}
+
+func (m *runtimeMonitor) SetProcessor(p sender.Sender) {
+	m.Processor = p
+}
+
+func (m *runtimeMonitor) collectRuntime() {
 	var rtm runtime.MemStats
 	runtime.ReadMemStats(&rtm)
 
@@ -50,22 +73,7 @@ func (m *monitor) collectRuntime() {
 	m.Storage.SetGauge("TotalAlloc", float64(rtm.TotalAlloc))     //uint64s
 }
 
-func (m *monitor) collectRuntimeSystem() {
+func (m *runtimeMonitor) collectRuntimeSystem() {
 	m.Storage.SetGauge("RandomValue", 1000*rand.Float64())
 	m.Storage.AddCounter("PollCount", 1)
-}
-
-func (m *monitor) CollectRuntimeMetrics() {
-	m.collectRuntime()
-	m.collectRuntimeSystem()
-}
-
-func (m *monitor) DumpRuntime() error {
-	c := m.Storage.GetCounters()
-	g := m.Storage.GetGauges()
-	err := m.Processor.Process(c, g)
-	if err != nil {
-		return fmt.Errorf("error dumping metric: %w", err)
-	}
-	return nil
 }

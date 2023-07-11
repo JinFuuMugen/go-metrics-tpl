@@ -7,6 +7,7 @@ import (
 	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/sender"
 	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/storage"
 	"log"
+	"time"
 )
 
 func main() {
@@ -29,7 +30,11 @@ func main() {
 	m := monitors.NewRuntimeMonitor(str, snd)
 	g := monitors.NewGopsutilMonitor(str, snd)
 
-	semaphore := make(chan bool, cfg.RateLimit)
+	rateLimit := cfg.RateLimit
+	semaphore := make(chan bool, rateLimit)
+
+	rateLimitTicker := time.NewTicker(time.Second / time.Duration(rateLimit))
+	defer rateLimitTicker.Stop()
 
 	for {
 		select {
@@ -55,5 +60,7 @@ func main() {
 				logger.Warnf("maximum concurrent Dump executions reached, skipping current dump")
 			}
 		}
+
+		<-rateLimitTicker.C
 	}
 }

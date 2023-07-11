@@ -19,9 +19,9 @@ func New() (*Config, error) {
 	cfg := &Config{}
 	flag.StringVar(&cfg.Addr, `a`, cfg.Addr, `server address`)
 	flag.IntVar(&cfg.PollInterval, `p`, cfg.PollInterval, `poll interval`)
-	flag.IntVar(&cfg.ReportInterval, `r`, cfg.ReportInterval, `poll interval`)
+	flag.IntVar(&cfg.ReportInterval, `r`, cfg.ReportInterval, `report interval`)
 	flag.StringVar(&cfg.Key, `k`, cfg.Key, `SHA256 key`)
-	flag.IntVar(&cfg.RateLimit, `l`, cfg.RateLimit, `Requests limit`)
+	flag.IntVar(&cfg.RateLimit, `l`, cfg.RateLimit, `requests limit`)
 	flag.Parse()
 
 	if err := env.Parse(cfg); err != nil {

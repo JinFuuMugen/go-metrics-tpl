@@ -9,16 +9,20 @@ import (
 	"log"
 )
 
-type monitor struct {
+type gopsutilMonitor struct {
 	Storage   storage.Storage
 	Processor sender.Sender
 }
 
-func NewGopsutilMonitor(s storage.Storage, p sender.Sender) *monitor {
-	return &monitor{s, p}
+func NewGopsutilMonitor(s storage.Storage, p sender.Sender) GopsutilMonitor {
+	return &gopsutilMonitor{s, p}
 }
 
-func (m *monitor) CollectGopsutil() {
+func (m *gopsutilMonitor) Collect() {
+	m.CollectGopsutil()
+}
+
+func (m *gopsutilMonitor) CollectGopsutil() {
 
 	vm, err := mem.VirtualMemory()
 	if err != nil {
@@ -35,7 +39,7 @@ func (m *monitor) CollectGopsutil() {
 	m.Storage.SetGauge("CPUutilization1", cpuPercent[0])
 }
 
-func (m *monitor) Dump() error {
+func (m *gopsutilMonitor) Dump() error {
 	c := m.Storage.GetCounters()
 	g := m.Storage.GetGauges()
 	err := m.Processor.Process(c, g)
@@ -43,4 +47,8 @@ func (m *monitor) Dump() error {
 		return fmt.Errorf("error dumping metric: %w", err)
 	}
 	return nil
+}
+
+func (m *gopsutilMonitor) SetProcessor(p sender.Sender) {
+	m.Processor = p
 }
