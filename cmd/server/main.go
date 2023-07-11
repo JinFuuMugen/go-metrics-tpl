@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/compress"
 	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/config"
+	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/cryptography"
 	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/database"
 	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/handlers"
 	"github.com/JinFuuMugen/go-metrics-tpl.git/internal/io"
@@ -41,11 +42,13 @@ func main() {
 
 	rout.Route("/updates", func(r chi.Router) {
 		r.Use(io.GetDumperMiddleware(cfg))
+		r.Use(cryptography.ValidateHashMiddleware(cfg))
 		r.Post("/", handlers.UpdateBatchMetricsHandler)
 	})
 
 	rout.Route("/update", func(r chi.Router) {
 		r.Use(io.GetDumperMiddleware(cfg))
+		r.Use(cryptography.ValidateHashMiddleware(cfg))
 		r.Post("/", handlers.UpdateMetricsHandler)
 		r.Post("/{metric_type}/{metric_name}/{metric_value}", handlers.UpdateMetricsPlainHandler)
 	})
