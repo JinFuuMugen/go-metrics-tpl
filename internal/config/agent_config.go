@@ -40,6 +40,10 @@ func New() (*Config, error) {
 		cfg.ReportInterval = 10
 	}
 
+	if cfg.RateLimit == 0 {
+		cfg.RateLimit = 1
+	}
+
 	return cfg, nil
 }
 
