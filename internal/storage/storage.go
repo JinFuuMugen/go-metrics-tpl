@@ -18,7 +18,6 @@ type (
 		//TODO FIXME
 		GetValue() interface{}
 	}
-
 	Storage interface {
 		SetGauge(string, float64)
 		AddCounter(string, int64)
